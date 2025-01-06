@@ -5,7 +5,7 @@ using UnityEngine;
 public class WaterSpeedTrap : MonoBehaviour
 {
     private string[] tagsArray = { "SpeedUp", "SlowDown" };
-    private SpriteRenderer sprite;
+    [SerializeField]private SpriteRenderer sprite;
 
     private void Awake()
     {
@@ -17,20 +17,13 @@ public class WaterSpeedTrap : MonoBehaviour
         int randoNumb = Random.Range(0, tagsArray.Length);
         gameObject.tag = tagsArray[randoNumb];
         WaterDirection(randoNumb);
-        Debug.Log("Water Speed Trap" +  gameObject.tag);
     }
 
     private void WaterDirection(int direction)
     {
-        if (direction == 0)
-        {
-            //Play srpite forward 
-        }
-        else
-        {
-            //Play Spirte other way
-        }
-
+        //Start Animation
+        if (direction != 0)
+            sprite.flipX = true;
     }
 
 }

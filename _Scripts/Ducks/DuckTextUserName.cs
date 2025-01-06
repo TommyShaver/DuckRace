@@ -6,6 +6,7 @@ using System.Collections;
 public class DuckTextUserName : MonoBehaviour
 {
     private TextMeshPro userNameTwitch;
+    private bool iHaveAName = false;
 
     private void Awake()
     {
@@ -14,10 +15,15 @@ public class DuckTextUserName : MonoBehaviour
     }
 
 
-    public void NameTag(string name)
+    public void NameTag(string name, int layer)
     {
-        userNameTwitch.text = name;
-        Debug.Log("Player name loaded: " + name);
+        if (!iHaveAName)
+        {
+            userNameTwitch.sortingOrder = layer + 1;
+            userNameTwitch.text = name;
+            Debug.Log("Player name loaded: " + name + " " + layer);
+            iHaveAName = true;
+        }
     }
 
 }

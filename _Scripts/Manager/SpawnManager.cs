@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
@@ -10,10 +8,9 @@ public class SpawnManager : MonoBehaviour
     public Vector3[] spawnPoints;
 
     [SerializeField] private int spawnCount;
-
     [SerializeField] private string[] usernameLog = new string[8];
 
-    public static event Action<string> OnSpawn;
+    public static event Action<string, int> OnSpawn;
 
     //Setup ------------------------------------------------------------------------------------
     private void Awake()
@@ -32,13 +29,10 @@ public class SpawnManager : MonoBehaviour
     //Logic ---------------------------------------------------------------------------------
     public void IncomingData(string name) //From Twitch Manager
     {
-        foreach (string s in usernameLog)
+        if (usernameLog[7] != "")
         {
-            if (!string.IsNullOrEmpty(s))
-            {
-                Debug.Log("This game is full");
-                return;
-            }
+            Debug.Log("This game is full");
+            return;
         }
         for (int i = 0; i < usernameLog.Length; i++)
         {
@@ -51,8 +45,8 @@ public class SpawnManager : MonoBehaviour
             {
                 usernameLog[i] = name;
                 SpawnPrefab();
-                OnSpawn?.Invoke(name); //To Duck Manager
-                Debug.Log(name + " <- user name Spawn Manager");
+                OnSpawn?.Invoke(name, i); //To Duck Manager
+                Debug.Log(i);
                 return;
             }
         }

@@ -3,13 +3,15 @@ using UnityEngine;
 public class DuckManager : MonoBehaviour
 {
     private DuckMovement duckMovement;
-    [SerializeField] private DuckTextUserName duckText;
+    private DuckTextUserName duckText;
+    private DuckColor duckColor;
 
     //Setup ---------------------------------------------------------------
     private void Awake()
     {
         duckMovement = GetComponent<DuckMovement>();
         duckText = GetComponentInChildren<DuckTextUserName>();
+        duckColor = GetComponentInChildren<DuckColor>();
     }
     private void OnEnable()
     {
@@ -28,10 +30,11 @@ public class DuckManager : MonoBehaviour
         duckMovement.SetSpeed();
     }
 
-    public void GiveUsernameToDuck(string username)
+    public void GiveUsernameToDuck(string username, int layer)
     {
-        duckText.NameTag(username);
-        Debug.Log(username + " <- username DuckManager");
+        duckText.NameTag(username, layer);
+        duckColor.ChangeSortingLayer(layer);
+        Debug.Log(username + " " +  layer + " <- username DuckManager");
     }
 
     public void MovementStart()
