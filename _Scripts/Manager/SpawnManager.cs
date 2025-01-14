@@ -38,15 +38,13 @@ public class SpawnManager : MonoBehaviour
         {
             if (usernameLog[i] == name)
             {
-                Debug.Log("Name Already in list.");
-                return;
+                Debug.Log("Name Already in list."); 
             }
             else
             {
                 usernameLog[i] = name;
                 SpawnPrefab();
-                OnSpawn?.Invoke(name, i); //To Duck Manager
-                Debug.Log(i);
+                OnSpawn?.Invoke(name, spawnCount); //To Duck Manager
                 return;
             }
         }

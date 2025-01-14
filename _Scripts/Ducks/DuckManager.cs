@@ -5,6 +5,7 @@ public class DuckManager : MonoBehaviour
     private DuckMovement duckMovement;
     private DuckTextUserName duckText;
     private DuckColor duckColor;
+    private DuckFace duckFace;
 
     //Setup ---------------------------------------------------------------
     private void Awake()
@@ -12,14 +13,19 @@ public class DuckManager : MonoBehaviour
         duckMovement = GetComponent<DuckMovement>();
         duckText = GetComponentInChildren<DuckTextUserName>();
         duckColor = GetComponentInChildren<DuckColor>();
+        duckFace = GetComponentInChildren<DuckFace>();
     }
     private void OnEnable()
     {
         SpawnManager.OnSpawn += GiveUsernameToDuck;
+        UIManager.OnClearPlayers += DestoryDuck;
+        UIManager.OnResetPlayers += ResetDuck;
     }
     private void OnDisable()
     {
         SpawnManager.OnSpawn -= GiveUsernameToDuck;
+        UIManager.OnClearPlayers -= DestoryDuck;
+        UIManager.OnResetPlayers -= ResetDuck;
     }
 
     //Logic --------------------------------------------------------------------
@@ -40,5 +46,21 @@ public class DuckManager : MonoBehaviour
     public void MovementStart()
     {
         duckMovement.MovementStart();
+    }
+
+    public void SpeedChanged(bool changed)
+    {
+        if (changed)
+        {
+            duckFace.RandomFace();
+        }
+        else
+        {
+            duckFace.DefaultFace();
+        }
+    }
+    public void DestoryDuck()
+    {
+        Destroy(gameObject);
     }
 }

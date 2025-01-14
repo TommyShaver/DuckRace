@@ -25,10 +25,16 @@ public class GameManager : MonoBehaviour
         ResetGame();
     }
 
+    //In Bound Calls -----------------------------------------------------------------------
+    public void TimeMagament(float time)
+    {
+        Time.timeScale = time;
+    }
+
     //Debug menu -------------------------------------------
     private void ResetGame()
     {
-        if (Input.GetKeyUp(KeyCode.R))
+        if (Input.GetKeyUp(KeyCode.Escape))
         {
             SceneManager.LoadScene("MainGameScene");
         }

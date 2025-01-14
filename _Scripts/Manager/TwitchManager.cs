@@ -6,19 +6,31 @@ using UnityEngine;
 
 public class TwitchManager : MonoBehaviour
 {
+    public static TwitchManager instance;
     private TcpClient twitchClient;
     private StreamReader reader;
     private StreamWriter writer;
 
     private string username = "justinfan1234";
     private string passsword = "testtesttest";
-    private string channelName = "Dark_Zelda92"; // <- this need to be public for user to change.
+    private string channelName = "plus5armor"; // <- this need to be public for user to change.
 
     public delegate void ChatMessageListener(string message, string parameters);
     public event ChatMessageListener ChatmessageListeners;
 
 
     //Set up unity ---------------------------------------------------------------------
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(this);
+        }
+    }
     private void Start()
     {
         TryToConnectTwitch();
@@ -70,7 +82,7 @@ public class TwitchManager : MonoBehaviour
                 splitPoint = message.IndexOf(":", 1);
                 string chatMessage = message.Substring(splitPoint + 1);
                 ChatmessageListeners?.Invoke(chatName, chatMessage);
-                Debug.Log(chatName + " "  + chatMessage);
+                //Debug.Log(chatName + " "  + chatMessage);
                 if(chatMessage == "!Join")
                 {
                     SpawnManager.Instance.IncomingData(chatName); //To Spawn Manager
@@ -83,6 +95,13 @@ public class TwitchManager : MonoBehaviour
     public void ReconnectToTwitch()
     {
         TryToConnectTwitch();
+    }
+
+    public void SwitchTwitchUserName(string s)
+    {
+        channelName = s;
+        TryToConnectTwitch();
+        Debug.Log(s);
     }
     
 }

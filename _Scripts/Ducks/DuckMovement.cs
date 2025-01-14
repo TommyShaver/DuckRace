@@ -10,7 +10,15 @@ public class DuckMovement : MonoBehaviour
     [SerializeField] bool slowDownCheck;
     [SerializeField] bool movementGo;
 
+    private DuckManager duckManager;
+
+    private Tween roationTwen;
+
     //Set up---------------------------------------------
+    private void Awake()
+    {
+        duckManager = GetComponent<DuckManager>();
+    }
     void Start()
     {
         startPos = transform.position;
@@ -24,6 +32,7 @@ public class DuckMovement : MonoBehaviour
         if (movementGo)
         {
             transform.Translate(speedSet * Time.deltaTime * Vector2.right);
+            roationTwen = transform.DORotate(new Vector3(0,0,0.5f), 1f).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutBack);
         }
     }
 
@@ -32,16 +41,19 @@ public class DuckMovement : MonoBehaviour
         if (collision.gameObject.tag == "SlowDown")
         {
             SlowDownDuck();
+           
         }
         if (collision.gameObject.tag == "SpeedUp")
         {
             SpeedUpDuck();
         }
+        duckManager.SpeedChanged(true);
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
         ResetSpeed();
+        duckManager.SpeedChanged(false);
     }
 
     //Speed And Postion setup (Incoming Info) ------------------------------
@@ -65,6 +77,7 @@ public class DuckMovement : MonoBehaviour
     public void MovementStop()
     {
         movementGo = false;
+        roationTwen.Kill();
     }
 
     private void SlowDownDuck()

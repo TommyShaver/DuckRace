@@ -19,7 +19,7 @@ public class DuckTextUserName : MonoBehaviour
     {
         if (!iHaveAName)
         {
-            userNameTwitch.sortingOrder = layer + 1;
+            userNameTwitch.sortingOrder = layer;
             userNameTwitch.text = name;
             Debug.Log("Player name loaded: " + name + " " + layer);
             iHaveAName = true;
