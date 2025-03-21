@@ -1,4 +1,4 @@
-using System.Collections;
+using System;
 using System.IO;
 using System.Net.Sockets;
 using UnityEngine;
@@ -11,9 +11,14 @@ public class TwitchManager : MonoBehaviour
     private StreamReader reader;
     private StreamWriter writer;
 
+
     private string username = "justinfan1234";
     private string passsword = "testtesttest";
     private string channelName = "plus5armor"; // <- this need to be public for user to change.
+    private string trustedMod; //<- all mod name
+
+    public bool gameStarted;
+    public bool canLoadIn;
 
     public delegate void ChatMessageListener(string message, string parameters);
     public event ChatMessageListener ChatmessageListeners;
@@ -33,16 +38,22 @@ public class TwitchManager : MonoBehaviour
     }
     private void Start()
     {
-        TryToConnectTwitch();
+        WhichPlatform();
     }
 
     private void Update()
     {
-        ReadChat();
+        ReadChatComputer();
+    }
+
+    // Which platform are we using ----------------------------------------------------
+    private void WhichPlatform()
+    {
+        TryToConnectTwitchComputer();
     }
 
     //Logic ----------------------------------------------------------------------------
-    private void TryToConnectTwitch()
+    private void TryToConnectTwitchComputer()
     {
         try
         {
@@ -55,6 +66,7 @@ public class TwitchManager : MonoBehaviour
             writer.WriteLine("JOIN #" + channelName);
             writer.Flush();
 
+            canLoadIn = true;
             Debug.Log("Connected to Twitch IRC");
         }
         catch
@@ -63,9 +75,9 @@ public class TwitchManager : MonoBehaviour
         }
     }
 
-    private void ReadChat()
+    private void ReadChatComputer()
     {
-        if(twitchClient.Available > 0)
+        if (twitchClient.Available > 0)
         {
             string message = reader.ReadLine();
             if (message.Contains("PING"))
@@ -75,33 +87,52 @@ public class TwitchManager : MonoBehaviour
                 return;
             }
 
-            if (message.Contains("PRIVMSG"))
+            if (message.Contains("PRIVMSG") && canLoadIn)
             {
                 int splitPoint = message.IndexOf("!", 1);
                 string chatName = message.Substring(1, splitPoint - 1);
                 splitPoint = message.IndexOf(":", 1);
                 string chatMessage = message.Substring(splitPoint + 1);
                 ChatmessageListeners?.Invoke(chatName, chatMessage);
-                //Debug.Log(chatName + " "  + chatMessage);
-                if(chatMessage == "!Join")
+                Debug.Log(chatName + " "  + chatMessage);
+                if (chatMessage == "!Join" && !gameStarted)
                 {
                     SpawnManager.Instance.IncomingData(chatName); //To Spawn Manager
                 }
+                if (chatName == trustedMod && chatMessage == "!Go")
+                {
+                    GameManager.instance.GameStart();
+                }
+                if (chatName == trustedMod && chatMessage == "!Reset")
+                {
+                    GameManager.instance.GameReset();
+                }
+                if (chatName == trustedMod && chatMessage == "!Clear")
+                {
+                    GameManager.instance.GameClear();
+                }
+                Debug.Log(canLoadIn);
             }
         }
     }
 
+
     //UI Function ------------------------------------------------------------------------
     public void ReconnectToTwitch()
     {
-        TryToConnectTwitch();
+        WhichPlatform();
     }
 
     public void SwitchTwitchUserName(string s)
     {
         channelName = s;
-        TryToConnectTwitch();
-        Debug.Log(s);
+        WhichPlatform();
+        Debug.Log("Steamer is: " + s);
     }
-    
+    public void SwitchTwitchTrustedMod(string s)
+    {
+        trustedMod = s;
+        Debug.Log("Trusted Mod is: " + s);
+    }
+
 }

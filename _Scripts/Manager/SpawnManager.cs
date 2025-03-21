@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
@@ -11,6 +12,8 @@ public class SpawnManager : MonoBehaviour
     [SerializeField] private string[] usernameLog = new string[8];
 
     public static event Action<string, int> OnSpawn;
+
+    private bool canSpawn = true;
 
     //Setup ------------------------------------------------------------------------------------
     private void Awake()
@@ -29,7 +32,11 @@ public class SpawnManager : MonoBehaviour
     //Logic ---------------------------------------------------------------------------------
     public void IncomingData(string name) //From Twitch Manager
     {
-        if (usernameLog[7] != "")
+        if(!canSpawn)
+        {
+            return;
+        }
+        if (usernameLog.All(item => !string.IsNullOrEmpty(item)))
         {
             Debug.Log("This game is full");
             return;
@@ -38,13 +45,16 @@ public class SpawnManager : MonoBehaviour
         {
             if (usernameLog[i] == name)
             {
-                Debug.Log("Name Already in list."); 
+                Debug.Log("Name Already in list.");
+                Debug.Log(usernameLog[i]);
+                return;
             }
             else
             {
                 usernameLog[i] = name;
                 SpawnPrefab();
                 OnSpawn?.Invoke(name, spawnCount); //To Duck Manager
+                GameManager.instance.DucksDictinoary(name, 0);
                 return;
             }
         }
@@ -53,6 +63,14 @@ public class SpawnManager : MonoBehaviour
     {
         Instantiate(duckPrefab, spawnPoints[spawnCount], Quaternion.identity);
         spawnCount++;
+        GameManager.instance.canGo = true;
+        UIManager.Instance.ShowHideStartButton(true);
+        UIManager.Instance.resetButtonMenu.SetActive(true);
+    }
+
+    public void CanSpawn(bool isTrue)
+    {
+        canSpawn = isTrue;
     }
 
 
@@ -60,11 +78,7 @@ public class SpawnManager : MonoBehaviour
     public void ResetSpawnCount()
     {
         spawnCount = 0;
-        for (int i = 0; i < usernameLog.Length; i++)
-        {
-            usernameLog[i] = null;
-        }
+        Array.Clear(usernameLog, 0, usernameLog.Length);  
+
     }
-
-
 }

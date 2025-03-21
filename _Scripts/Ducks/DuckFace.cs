@@ -17,13 +17,22 @@ public class DuckFace : MonoBehaviour
         DefaultFace();
     }
 
+    //changes duck faces over spawned playable duck ------------
     public void DefaultFace()
     {
         spriteRenderer.sprite = sprites[0];
     }
-    public void RandomFace()
+    public void RandomFace(bool isHappy)
     {
-        int randomNumber = Random.Range(1, sprites.Length);
-        spriteRenderer.sprite = sprites[randomNumber];  
+        if(!isHappy)
+        {
+            int randomNumber = Random.Range(1, 3);
+            spriteRenderer.sprite = sprites[randomNumber];
+        }
+        else 
+        {
+            int randomNumber = Random.Range(4, 5);
+            spriteRenderer.sprite = sprites[randomNumber];
+        }
     }
 }

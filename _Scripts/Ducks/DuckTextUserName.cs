@@ -1,11 +1,11 @@
 using UnityEngine;
 using TMPro;
-using System.Runtime.CompilerServices;
-using System.Collections;
+
 
 public class DuckTextUserName : MonoBehaviour
 {
     private TextMeshPro userNameTwitch;
+    private int lockedLayer;
     private bool iHaveAName = false;
 
     private void Awake()
@@ -13,12 +13,12 @@ public class DuckTextUserName : MonoBehaviour
         userNameTwitch = GetComponent<TextMeshPro>();
         userNameTwitch.text = " ";
     }
-
-
+  
     public void NameTag(string name, int layer)
     {
         if (!iHaveAName)
         {
+            lockedLayer = layer;
             userNameTwitch.sortingOrder = layer;
             userNameTwitch.text = name;
             Debug.Log("Player name loaded: " + name + " " + layer);
@@ -26,4 +26,9 @@ public class DuckTextUserName : MonoBehaviour
         }
     }
 
+    //Send info to DuckManager for tracking --------------------------------
+    public string GetName()
+    {
+        return userNameTwitch.text;
+    }
 }
