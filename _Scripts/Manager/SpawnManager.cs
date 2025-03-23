@@ -28,36 +28,44 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
-
     //Logic ---------------------------------------------------------------------------------
-    public void IncomingData(string name) //From Twitch Manager
+    public void IncomingData(string ducksName) //From Twitch Manager
     {
-        if(!canSpawn)
+        bool nameExist = false;
+        if(!canSpawn) //Check to make sure you can spawn
         {
             return;
         }
-        if (usernameLog.All(item => !string.IsNullOrEmpty(item)))
+        if (usernameLog.All(item => !string.IsNullOrEmpty(item))) // Check to make sure thre is a spot left
         {
             Debug.Log("This game is full");
             return;
         }
-        for (int i = 0; i < usernameLog.Length; i++)
+        for (int i = 0; i < usernameLog.Length; i++) //Check to see if the player is already there 
         {
-            if (usernameLog[i] == name)
+            if (usernameLog[i] == ducksName)
             {
-                Debug.Log("Name Already in list.");
-                Debug.Log(usernameLog[i]);
-                return;
-            }
-            else
-            {
-                usernameLog[i] = name;
-                SpawnPrefab();
-                OnSpawn?.Invoke(name, spawnCount); //To Duck Manager
-                GameManager.instance.DucksDictinoary(name, 0);
-                return;
+                Debug.Log("Name Already in list." + i);
+                nameExist = true;
+                break;
             }
         }
+        if (!nameExist) // If name doesn't exist find open spot and spawn duck.
+        {
+            for (int i = 0; i < usernameLog.Length; i++)
+            {
+                if (usernameLog[i] == string.Empty)
+                {
+                    usernameLog[i] = ducksName;
+                    SpawnPrefab();
+                    OnSpawn?.Invoke(ducksName, spawnCount); //To Duck Manager
+                    GameManager.instance.DucksDictinoary(ducksName, 0);
+                    ScoreBoradManager.instance.GiveName(ducksName);
+                    break;
+                }
+            }
+        }
+        nameExist = false; // clean up bool
     }
     private void SpawnPrefab()
     {

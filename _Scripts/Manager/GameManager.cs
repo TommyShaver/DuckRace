@@ -118,6 +118,8 @@ public class GameManager : MonoBehaviour
         MusicManager.instance.EndOfGameMusicStart();
         MusicManager.instance.CleanUpMainLoop();
         SoundManager.instance.EndGameCheeringPlayer();
+        ScoreBoradManager.instance.ScoreUpdate(nameStored[0]);
+        ScoreBoradManager.instance.MoveOnScreen();
         
     }
 
@@ -165,6 +167,7 @@ public class GameManager : MonoBehaviour
             MusicManager.instance.CleanUpMainLoop();
             SoundManager.instance.playedOnce = false;
             SoundManager.instance.EndGameCheeringPlayer();
+            ScoreBoradManager.instance.MoveOffScreen();
         }
     }
 
@@ -205,6 +208,8 @@ public class GameManager : MonoBehaviour
             MusicManager.instance.CleanUpMainLoop();
             SoundManager.instance.playedOnce = false;
             SoundManager.instance.EndGameCheeringPlayer();
+            ScoreBoradManager.instance.MoveOffScreen();
+            ScoreBoradManager.instance.CleanUp();
         }
     }
 

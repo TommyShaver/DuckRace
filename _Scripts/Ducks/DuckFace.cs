@@ -17,6 +17,11 @@ public class DuckFace : MonoBehaviour
         DefaultFace();
     }
 
+    public void FaceLayer(int layer)
+    {
+        spriteRenderer.sortingOrder = layer; 
+    }
+
     //changes duck faces over spawned playable duck ------------
     public void DefaultFace()
     {

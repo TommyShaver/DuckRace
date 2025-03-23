@@ -54,7 +54,7 @@ public class CameraManager : MonoBehaviour
 
     private IEnumerator WaitASecond()
     {
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(3.5f);
         startMovingCamera = true;
     }
 

@@ -50,6 +50,7 @@ public class DuckManager : MonoBehaviour
         Debug.Log(username + " " +  layer + " <- username DuckManager");
         SoundManager.instance.Duck_SFX();
         duckEffects.SpawnParticleSystem(layer);
+        duckFace.FaceLayer(layer);
  
     }
 
