@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
@@ -12,6 +13,8 @@ public class SpawnManager : MonoBehaviour
 
     public static event Action<string, int> OnSpawn;
 
+    private bool canSpawn = true;
+
     //Setup ------------------------------------------------------------------------------------
     private void Awake()
     {
@@ -24,35 +27,65 @@ public class SpawnManager : MonoBehaviour
             Destroy(this);
         }
     }
-
+    private void Start()
+    {
+        for (int i = 0; i < usernameLog.Length; i++)
+        {
+            Debug.Log(usernameLog[i]);
+        }
+    }
 
     //Logic ---------------------------------------------------------------------------------
-    public void IncomingData(string name) //From Twitch Manager
+    public void IncomingData(string ducksName) //From Twitch Manager
     {
-        if (usernameLog[7] != "")
+        bool nameExist = false;
+        if(!canSpawn) //Check to make sure you can spawn
+        {
+            return;
+        }
+        if (usernameLog.All(item => !string.IsNullOrEmpty(item))) // Check to make sure thre is a spot left
         {
             Debug.Log("This game is full");
             return;
         }
-        for (int i = 0; i < usernameLog.Length; i++)
+        for (int i = 0; i < usernameLog.Length; i++) //Check to see if the player is already there 
         {
-            if (usernameLog[i] == name)
+            if (usernameLog[i] == ducksName)
             {
-                Debug.Log("Name Already in list."); 
-            }
-            else
-            {
-                usernameLog[i] = name;
-                SpawnPrefab();
-                OnSpawn?.Invoke(name, spawnCount); //To Duck Manager
-                return;
+                Debug.Log("Name Already in list." + i);
+                nameExist = true;
+                break;
             }
         }
+        if (!nameExist) // If name doesn't exist find open spot and spawn duck.
+        {
+            for (int i = 0; i < usernameLog.Length; i++)
+            {
+                if (usernameLog[i] == string.Empty)
+                {
+                    usernameLog[i] = ducksName;
+                    SpawnPrefab();
+                    OnSpawn?.Invoke(ducksName, spawnCount); //To Duck Manager
+                    GameManager.instance.DucksDictinoary(ducksName, 0);
+                    ScoreBoradManager.instance.GiveName(ducksName);
+                    break;
+                }
+            }
+        }
+        nameExist = false; // clean up bool
     }
     private void SpawnPrefab()
     {
         Instantiate(duckPrefab, spawnPoints[spawnCount], Quaternion.identity);
         spawnCount++;
+        GameManager.instance.canGo = true;
+        UIManager.Instance.ShowHideStartButton(true);
+        UIManager.Instance.resetButtonMenu.SetActive(true);
+    }
+
+    public void CanSpawn(bool isTrue)
+    {
+        canSpawn = isTrue;
     }
 
 
@@ -62,9 +95,9 @@ public class SpawnManager : MonoBehaviour
         spawnCount = 0;
         for (int i = 0; i < usernameLog.Length; i++)
         {
-            usernameLog[i] = null;
+            usernameLog [i] = string.Empty;
+            Debug.Log(usernameLog[i]);
         }
+
     }
-
-
 }
