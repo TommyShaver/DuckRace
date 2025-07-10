@@ -75,11 +75,11 @@ public class UIManager : MonoBehaviour
     //Load local user names -------------------------------------------------------------------------------
     private void LoadData()
     {
-        TwitchManager.instance.SwitchTwitchUserName(PlayerPrefs.GetString("Streamer"));
+        //TwitchManager.instance.SwitchTwitchUserName(PlayerPrefs.GetString("Streamer"));
         placeHolderText.text = PlayerPrefs.GetString("Streamer") + " connected";
         showConnectedUserName.text = "Connected to " + PlayerPrefs.GetString("Streamer");
 
-        TwitchManager.instance.SwitchTwitchTrustedMod(PlayerPrefs.GetString("TrustedMod"));
+        //TwitchManager.instance.SwitchTwitchTrustedMod(PlayerPrefs.GetString("TrustedMod"));
         placeHolderTextMod.text = PlayerPrefs.GetString("TrustedMod") + " connected";
         showTrusedMod.text = "Connected to " + PlayerPrefs.GetString("TrustedMod");
 
@@ -121,7 +121,7 @@ public class UIManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Return))
         {
             PlayerPrefs.SetString("Streamer", inputText);    
-            TwitchManager.instance.SwitchTwitchUserName(inputText.ToLower());
+            //TwitchManager.instance.SwitchTwitchUserName(inputText.ToLower());
             placeHolderText.text = inputText + " connected";
             showConnectedUserName.text = "Connected to "  + inputText;
         }
@@ -132,7 +132,7 @@ public class UIManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Return))
         {
             PlayerPrefs.SetString("TrustedMod", inputText);
-            TwitchManager.instance.SwitchTwitchTrustedMod(inputText.ToLower());   
+            //TwitchManager.instance.SwitchTwitchTrustedMod(inputText.ToLower());   
             placeHolderTextMod.text = inputText + " connected";
             showTrusedMod.text = "Connected to " + inputText;
             if(inputText == "Duck!")

@@ -2,8 +2,11 @@ using UnityEngine;
 
 public class DucksParticalSystem : MonoBehaviour
 {
+    public ParticleSystem landInWater;
+
     private ParticleSystem particleSystemDuck;
     private Renderer partSystemRender;
+    private int currentLayer = 50;
 
     private void Awake()
     {
@@ -18,8 +21,7 @@ public class DucksParticalSystem : MonoBehaviour
 
     public void SpawnParticleSystem(int i)
     {
-        int layer = 1 - i;
-        partSystemRender.sortingOrder = layer;
+        partSystemRender.sortingOrder = currentLayer - i;
     }
 
     public void EffectStart()
@@ -29,5 +31,16 @@ public class DucksParticalSystem : MonoBehaviour
     public void EffectStop()
     {
         particleSystemDuck.Stop();
+    }
+
+    public void DuckChangedLayer(int i)
+    {
+        //So when the ducks change levels the sort order travels with it.
+        partSystemRender.sortingOrder += i;
+    }
+
+    public void DuckLandInWater()
+    {
+        landInWater.Play();
     }
 }

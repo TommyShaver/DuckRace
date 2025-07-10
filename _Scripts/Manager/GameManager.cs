@@ -8,13 +8,11 @@ using DG.Tweening;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance { get; private set; }
-    public ParticleSystem confetti;
     public bool canGo;
     
 
     private Dictionary<string, float> duckLocation = new Dictionary<string, float>();
     private Dictionary<string, float> duckSpeed = new Dictionary<string, float>();
-    private Char[] serectSong;
 
     private List<string> nameStored = new List<string>();
     private bool winner;
@@ -43,7 +41,6 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-        confetti.Stop();
         stopTracking = true;
         canSelect = true;
     }
@@ -104,7 +101,6 @@ public class GameManager : MonoBehaviour
         OnWinner?.Invoke();
 
         stopTracking = true;
-        confetti.Play();
         resetCalled = false;
         StartCoroutine(WaitForEnd());
         UIManager.Instance.joinText.fontSize = 75;
@@ -144,7 +140,6 @@ public class GameManager : MonoBehaviour
             OnWinner?.Invoke(); // Reset Remote Sound Players 
 
             nameStored.Clear();
-            confetti.Stop();
             winner = false;
             resetCalled = true;
             stopTracking = true;
@@ -152,7 +147,7 @@ public class GameManager : MonoBehaviour
             CameraManager.instance.GameReset();
             PlayField.instance.DespwanTrapsObject(true);
             SpawnManager.Instance.CanSpawn(true);
-            TwitchManager.instance.gameStarted = false;
+            //TwitchManager.instance.gameStarted = false;
             UIManager.Instance.joinText.text = string.Empty;
             UIManager.Instance.winnerNameText.text = string.Empty;
             UIManager.Instance.GameOverButtons(false);
@@ -178,7 +173,6 @@ public class GameManager : MonoBehaviour
             OnClearPlayers?.Invoke(); //Duck Manager
             OnWinner?.Invoke(); // Reset Remote Sound Players
 
-            confetti.Stop();
             nameStored.Clear();
             duckLocation.Clear();
             duckSpeed.Clear();
@@ -190,7 +184,7 @@ public class GameManager : MonoBehaviour
             PlayField.instance.DespwanTrapsObject(true);
             SpawnManager.Instance.ResetSpawnCount();
             SpawnManager.Instance.CanSpawn(true);
-            TwitchManager.instance.gameStarted = false;
+            //TwitchManager.instance.gameStarted = false;
             UIManager.Instance.ShowHideStartButton(false);
             UIManager.Instance.GameOverButtons(false);
             UIManager.Instance.joinText.fontSize = 75;
@@ -213,11 +207,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void CloseApp()
-    {
-
-        Application.Quit();
-    }
 
     private IEnumerator WaitForEnd()
     {
@@ -261,7 +250,6 @@ public class GameManager : MonoBehaviour
                     stopTracking = false;
                     CameraManager.instance.WaitAndGo();
                     SpawnManager.Instance.CanSpawn(false);
-                    TwitchManager.instance.gameStarted = true;
                     MusicManager.instance.MainLoopIntro();
                     break;
             }    

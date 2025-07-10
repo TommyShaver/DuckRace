@@ -17,6 +17,7 @@ public class DuckMovement : MonoBehaviour
     private Tween roationTwen;
     private bool isHappy;
     private GameObject finishLine;
+    private string myName;
 
     //Set up---------------------------------------------
     private void Awake()
@@ -26,13 +27,14 @@ public class DuckMovement : MonoBehaviour
 
     void Start()
     {
+        this.transform.Rotate(-15,0,0);
         startPos = transform.position;
         SetSpeed();
         StartCoroutine(OnLoadAnim());
         finishLine = GameObject.FindWithTag("FinishLine");
         stoptacking = false;
     }
-
+ 
     //Logic ----------------------------------------------- 
     void Update()
     {
@@ -137,6 +139,14 @@ public class DuckMovement : MonoBehaviour
         duckManager.GetSpeed(speedToDuckManager);
     }
 
+    public void ChangeYPostion(int i)
+    {
+        //Game not started get out of it.
+        //if (!movementGo) return;
+
+        transform.DOMoveY(transform.position.y + i, .5f).SetEase(Ease.InOutBack);
+    }
+
 
     //Game Over --------------------------------------------------------------------------
     public void GameOver()
@@ -152,8 +162,7 @@ public class DuckMovement : MonoBehaviour
     {
         transform.DOMoveY(transform.position.y + 1, 0, true);
         yield return new WaitForSeconds(0.2f);
-        SoundManager.instance.SpawnSpalsh_SFX(true);
         transform.DOMoveY(startPos.y, .5f, false).SetEase(Ease.OutBounce);
-        //send command landed in water
+        duckManager.DuckTouchedWater();
     }
 }

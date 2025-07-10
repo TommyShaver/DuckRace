@@ -3,55 +3,47 @@ using UnityEngine;
 
 public class DucksQuack : MonoBehaviour
 {
-    public AudioClip[] ducksQuake;
-    private AudioSource atmoDuckPlayer;
-    private bool canQuack;
+    public AudioClip[] quackSmaple;
+    public AudioClip popSFX;
+    public AudioClip splashSFX;
+    public AudioSource quackMachine;
+    public AudioSource splashMachine;
+   
+    private bool haveQuacked;
+   
 
-    private void OnEnable()
+    public void Quack()
     {
-        GameManager.OnDucksGo += StartQuack;
-        GameManager.OnResetPlayers += StopQuack;
-        GameManager.OnClearPlayers += StopQuack;
-    }
-
-    private void OnDisable()
-    {
-        GameManager.OnDucksGo -= StartQuack;
-        GameManager.OnResetPlayers -= StopQuack;
-        GameManager.OnClearPlayers -= StopQuack;
-    }
-    private void Awake()
-    {
-        atmoDuckPlayer = GetComponent<AudioSource>();
-    }
-
-    private void StartQuack()
-    {
-        canQuack = true;
-        StartCoroutine(DuckQuackLoop());
-    }
-
-    private void StopQuack()
-    {
-        canQuack = false;
-    }
-
-    private IEnumerator DuckQuackLoop()
-    {
-        while (canQuack)
+        if(!haveQuacked)
         {
-            int numberRandom = Random.Range(0, 2);
-            float secondsRandom = Random.Range(.5f, 3f);
-            float pitchRandom = Random.Range(1f, 1.5f);
-
-            yield return new WaitForSeconds(numberRandom);
-            atmoDuckPlayer.clip = ducksQuake[numberRandom];
-            atmoDuckPlayer.pitch = pitchRandom;
-            atmoDuckPlayer.Play();
+            haveQuacked = true;
+            int clip = Random.Range(0, 2);
+            quackMachine.pitch = 1;
+            quackMachine.volume = .8f;
+            quackMachine.clip = quackSmaple[clip];
+            quackMachine.Play();
+            StartCoroutine(TimerWait());
         }
-
-        atmoDuckPlayer.Stop();
     }
-    
+    public void ClearSFX()
+    {
+        quackMachine.pitch = 1;
+        quackMachine.volume = .3f;
+        quackMachine.clip = popSFX;
+        quackMachine.Play();
+    }
 
+    public void SplashSFX()
+    {
+        splashMachine.pitch = 1;
+        splashMachine.volume = .3f;
+        splashMachine.clip = splashSFX;
+        splashMachine.Play();
+    }
+
+    private IEnumerator TimerWait()
+    {
+        yield return new WaitForSeconds(5);
+        haveQuacked = false;
+    }
 }

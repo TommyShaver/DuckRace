@@ -54,6 +54,7 @@ public class MusicManager : MonoBehaviour
             {
                 audioFade.Kill();
                 musicPlayer[1].Stop();
+                //Why is nothing working?
             });
     }
 

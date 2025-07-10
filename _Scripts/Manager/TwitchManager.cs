@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 
@@ -17,11 +18,7 @@ public class TwitchManager : MonoBehaviour
     private string channelName = "plus5armor"; // <- this need to be public for user to change.
     private string trustedMod; //<- all mod name
 
-    public bool gameStarted;
-    public bool canLoadIn;
-
-    public delegate void ChatMessageListener(string message, string parameters);
-    public event ChatMessageListener ChatmessageListeners;
+    public static event Action<string, string> OnChatMessage;
 
 
     //Set up unity ---------------------------------------------------------------------
@@ -66,13 +63,13 @@ public class TwitchManager : MonoBehaviour
             writer.WriteLine("JOIN #" + channelName);
             writer.Flush();
 
-            canLoadIn = true;
             Debug.Log("Connected to Twitch IRC");
         }
         catch
         {
             Debug.Log("This did not work.");
         }
+
     }
 
     private void ReadChatComputer()
@@ -87,66 +84,26 @@ public class TwitchManager : MonoBehaviour
                 return;
             }
 
-            if (message.Contains("PRIVMSG") && canLoadIn)
+            if (message.Contains("PRIVMSG"))
             {
                 int splitPoint = message.IndexOf("!", 1);
                 string chatName = message.Substring(1, splitPoint - 1);
                 splitPoint = message.IndexOf(":", 1);
                 string chatMessage = message.Substring(splitPoint + 1);
-                ChatmessageListeners?.Invoke(chatName, chatMessage);
-                Debug.Log(chatName + " "  + chatMessage);
-                if (chatMessage == "!Join" && !gameStarted || chatMessage == "!join" && !gameStarted)
-                {
-                    SpawnManager.Instance.IncomingData(chatName); //To Spawn Manager
-                }
-                if (chatName == trustedMod && chatMessage == "!Go" || chatName == trustedMod && chatMessage == "!go")
-                {
-                    GameManager.instance.GameStart();
-                }
-                if (chatName == trustedMod && chatMessage == "!Reset" || chatName == trustedMod && chatMessage == "!reset")
-                {
-                    GameManager.instance.GameReset();
-                }
-                if (chatName == trustedMod && chatMessage == "!Clear" || chatName == trustedMod && chatMessage == "!clear")
-                {
-                    GameManager.instance.GameClear();
-                }
-
-
-                if (chatName == channelName && chatMessage == "!Go" || chatName == channelName && chatMessage == "!go")
-                {
-                    GameManager.instance.GameStart();
-                }
-                if (chatName == channelName && chatMessage == "!Reset" || chatName == channelName && chatMessage == "!reset")
-                {
-                    GameManager.instance.GameReset();
-                }
-                if (chatName == channelName && chatMessage == "!Clear" || chatName == channelName && chatMessage == "!clear")
-                {
-                    GameManager.instance.GameClear();
-                }
-                Debug.Log(canLoadIn);
+                string updatedMessage = CleanUpMessage(chatMessage);
+                OnChatMessage?.Invoke(chatName, updatedMessage);
+                Debug.Log(chatName + " " + updatedMessage);
             }
         }
     }
 
-
-    //UI Function ------------------------------------------------------------------------
-    public void ReconnectToTwitch()
+    private string CleanUpMessage(string input)
     {
-        WhichPlatform();
-    }
-
-    public void SwitchTwitchUserName(string s)
-    {
-        channelName = s;
-        WhichPlatform();
-        Debug.Log("Steamer is: " + s);
-    }
-    public void SwitchTwitchTrustedMod(string s)
-    {
-        trustedMod = s;
-        Debug.Log("Trusted Mod is: " + s);
-    }
-
+        bool containsEmoji = Regex.IsMatch(input, @"[\uD800-\uDBFF][\uDC00-\uDFFF]");
+        if (containsEmoji) 
+        {
+            return input.Substring(0, input.Length - 3);
+        }
+        return input;
+    } 
 }

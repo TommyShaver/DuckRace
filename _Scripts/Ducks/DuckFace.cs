@@ -6,6 +6,7 @@ public class DuckFace : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     [SerializeField] private Sprite[] sprites;
     private bool hasLayer;
+    private int currentLayer = 51;
     private void Awake()
     {
         animator = GetComponent<Animator>();
@@ -21,9 +22,15 @@ public class DuckFace : MonoBehaviour
     {
         if(!hasLayer)
         {
-            spriteRenderer.sortingOrder = layer + 1;
+            spriteRenderer.sortingOrder = layer + currentLayer;
             hasLayer = true;
         }
+    }
+
+    public void DuckChangedLayer(int i)
+    {
+        //So when the ducks change levels the sort order travels with it.
+        spriteRenderer.sortingOrder += i;
     }
 
     //changes duck faces over spawned playable duck ------------
