@@ -11,7 +11,7 @@ public class DucksParticalSystem : MonoBehaviour
     private void Awake()
     {
         particleSystemDuck = GetComponent<ParticleSystem>();
-        partSystemRender = GetComponent<ParticleSystem>().GetComponent<Renderer>();
+        partSystemRender = particleSystemDuck.GetComponent<Renderer>();
     }
 
     private void Start()
@@ -21,26 +21,28 @@ public class DucksParticalSystem : MonoBehaviour
 
     public void SpawnParticleSystem(int i)
     {
-        partSystemRender.sortingOrder = currentLayer - i;
+        if (partSystemRender != null)
+            partSystemRender.sortingOrder = currentLayer - i;
     }
 
     public void EffectStart()
     {
-        particleSystemDuck.Play();
+        particleSystemDuck?.Play();
     }
+
     public void EffectStop()
     {
-        particleSystemDuck.Stop();
+        particleSystemDuck?.Stop();
     }
 
     public void DuckChangedLayer(int i)
     {
-        //So when the ducks change levels the sort order travels with it.
-        partSystemRender.sortingOrder += i;
+        if (partSystemRender != null)
+            partSystemRender.sortingOrder += i;
     }
 
     public void DuckLandInWater()
     {
-        landInWater.Play();
+        landInWater?.Play();
     }
 }

@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
 {
     public static SpawnManager Instance { get; private set; }
+    public List<string> storeNames = new List<string>();
     public GameObject duckPrefab;
     [SerializeField] private Vector3[] spawnPoints;
 
@@ -14,6 +16,7 @@ public class SpawnManager : MonoBehaviour
     public static event Action<string, int> OnSpawn;
 
     private bool canSpawn = true;
+
 
     //Setup ------------------------------------------------------------------------------------
     private void Awake()
@@ -33,9 +36,6 @@ public class SpawnManager : MonoBehaviour
         if (SaveDataManager.instance.CheckBannedPlayers(ducksName))
             return;
 
-        if (!canSpawn) //Check to make sure you can spawn
-            return;
-
         if (usernameLog.All(item => !string.IsNullOrEmpty(item)))
             return; // Check to make sure thre is a spot left
 
@@ -48,6 +48,12 @@ public class SpawnManager : MonoBehaviour
             }
         }
 
+        if (!canSpawn) //Check to make sure you can spawn
+        {
+            storeNames.Add(ducksName);
+            return; 
+        }
+
         for (int i = 0; i < usernameLog.Length; i++)
         {
             if (usernameLog[i] == string.Empty)
@@ -57,8 +63,8 @@ public class SpawnManager : MonoBehaviour
                 spawnCount = i;
                 SpawnPrefab();
                 OnSpawn?.Invoke(ducksName, spawnCount); //To Duck Manager
-              //GameManager.instance.DucksDictinoary(ducksName, 0);
-              //ScoreBoradManager.instance.GiveName(ducksName);
+                GameManager.instance.DucksDictinoary(ducksName, 0);
+                //ScoreBoradManager.instance.GiveName(ducksName);
                 break;
             }
         }
@@ -68,6 +74,7 @@ public class SpawnManager : MonoBehaviour
     private void SpawnPrefab()
     {
         Instantiate(duckPrefab, spawnPoints[spawnCount], Quaternion.identity);
+        GameManager.instance.canGo = true;
     }
 
     public void CanSpawn(bool isTrue)
@@ -75,6 +82,18 @@ public class SpawnManager : MonoBehaviour
         canSpawn = isTrue;
     }
 
+    public void TryToSpawnAgain()
+    {
+        if (storeNames == null)
+            return;
+
+        foreach (string names in storeNames)
+        {
+            IncomingData(names);
+        }
+
+        storeNames.Clear();
+    }
 
     //UI buttons --------------------------------------------------------------------------
     public void ResetSpawnCount()

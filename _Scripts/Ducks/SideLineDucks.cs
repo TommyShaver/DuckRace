@@ -14,10 +14,24 @@ public class SideLineDucks : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
     }
-    
+
+    private void OnEnable()
+    {
+        GameManager.OnDucksGo += OnStartOfRace;
+        GameManager.OnResetPlayers += GetAnimation;
+        GameManager.OnClearPlayers += GetAnimation;
+    }
+
+    private void OnDisable()
+    {
+        GameManager.OnDucksGo -= OnStartOfRace;
+        GameManager.OnResetPlayers -= GetAnimation;
+        GameManager.OnClearPlayers -= GetAnimation;
+    }
+
     void Start()
     {
-        GetColor(); 
+        GetColor();
         GetAnimation();
     }
 
@@ -33,6 +47,12 @@ public class SideLineDucks : MonoBehaviour
     private void GetAnimation()
     {
         animator.Play(animaitonSelection[Random.Range(0, animaitonSelection.Length)]);
+        animator.SetFloat("ChangeSpeed", Random.Range(.5f, 1.2f));
+    }
+
+    private void OnStartOfRace()
+    {
+        animator.Play(animaitonSelection[2]);
         animator.SetFloat("ChangeSpeed", Random.Range(.5f, 1.2f));
     }
 }

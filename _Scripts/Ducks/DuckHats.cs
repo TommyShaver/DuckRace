@@ -33,6 +33,11 @@ public class DuckHats : MonoBehaviour
         hatRenderer.sortingOrder += i;
     }
 
+    public void FlipSprite(bool isTrue)
+    {
+        hatRenderer.flipX = isTrue;
+    }
+
     public void ChangeHat(string hat)
     {
         switch (hat)
@@ -82,8 +87,8 @@ public class DuckHats : MonoBehaviour
 
     private void ChangeTransform(Vector3 postion, float zRotation, Vector2 size)
     {
-        gameObject.transform.localPosition = postion;
-        gameObject.transform.rotation = Quaternion.Euler(0,0,zRotation);
+        transform.localPosition = postion;
+        transform.DOLocalRotate(new Vector3(0,0,zRotation),0);
         transform.localScale = size;
     }
 }

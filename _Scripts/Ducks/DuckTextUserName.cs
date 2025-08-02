@@ -5,7 +5,7 @@ using TMPro;
 public class DuckTextUserName : MonoBehaviour
 {
     private TextMeshPro userNameTwitch;
-    private int currentLayer = 51;
+    private int currentLayer = 52;
     private bool iHaveAName = false;
 
     private void Awake()

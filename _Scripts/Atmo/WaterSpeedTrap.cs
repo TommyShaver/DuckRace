@@ -1,76 +1,125 @@
 using UnityEngine;
 using DG.Tweening;
-using System.Collections.Generic;
-using System.Collections;
-using System.Runtime.CompilerServices;
 
 public class WaterSpeedTrap : MonoBehaviour
 {
-    private string[] tagsArray = { "SpeedUp", "SlowDown" };
-    [SerializeField] private SpriteRenderer sprite;
+    [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Animator animationPath;
     [SerializeField] Color[] startingColors;
     private Tween waveScaling;
-    private AudioSource audioSource;
-    private bool higherPitch;
-    private bool hasLayer;
+    [SerializeField]private bool speedUp;
+    private bool iHaveNumber;
+    private int idName;
+
+
 
     private void Awake()
     {
-        sprite.GetComponent<SpriteRenderer>();
-        animationPath.GetComponent<Animator>();
-        audioSource = GetComponent<AudioSource>();
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        animationPath = GetComponentInChildren<Animator>();
     }
 
     private void OnEnable()
     {
-        PlayField.OnDespawn += OnDeSpawn;
-        PlayField.OnSpawnWaves += GetLayer;
+        WaterTrapSpawner.OnCreateWaterTrapPrefab += OnSpawn;
+        WaterTrapSpawner.OnSendWaterTrapTransform += OnUpdateTranform;
+        WaterTrapSpawner.OnWaterTrapAnimationUp += OnAnimationUp;
+        WaterTrapSpawner.OnDeSpawnWaterTrap += OnDespawn;
     }
 
     private void OnDisable()
     {
-        PlayField.OnDespawn -= OnDeSpawn;
-        PlayField.OnSpawnWaves -= GetLayer;
+        WaterTrapSpawner.OnCreateWaterTrapPrefab -= OnSpawn;
+        WaterTrapSpawner.OnSendWaterTrapTransform -= OnUpdateTranform;
+        WaterTrapSpawner.OnWaterTrapAnimationUp -= OnAnimationUp;
+        WaterTrapSpawner.OnDeSpawnWaterTrap -= OnDespawn;
     }
 
-    private void Start()
-    {
-        int randoNumb = Random.Range(0, tagsArray.Length);
-        gameObject.tag = tagsArray[randoNumb];
-        sprite.color = startingColors[Random.Range(0, startingColors.Length)];
-        animationPath.speed = Random.Range(0.2f,0.5f);
-        if(randoNumb == 0)
-        {
-            higherPitch = true;
-        }
-        WaterDirection(randoNumb);
-        OnSpawn();
-        StartCoroutine(WaitSomeTime(true));
-    }
-
+    //? Collision logic ------------------------------------------
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject)
+        DuckInterractionInterface hit = collision.GetComponent<DuckInterractionInterface>();
+        if (hit != null)
         {
-            if (higherPitch)
+            if (!speedUp)
             {
-                audioSource.pitch = 1.5f;
-                audioSource.Play();
+                hit.DuckInterraction("SlownDown", true);
             }
             else
             {
-                audioSource.pitch = .9f;
-                audioSource.Play();
+                hit.DuckInterraction("SpeedUp", true);
             }
         }
     }
 
-    private void WaterDirection(int direction)
+    private void OnTriggerExit2D(Collider2D collision)
     {
-        //Start Animation
-        if (direction == 0)
-            sprite.flipX = true;
+        DuckInterractionInterface hit = collision.GetComponent<DuckInterractionInterface>();
+        if (hit != null)
+        {
+            if (!speedUp)
+            {
+                hit.DuckInterraction("SlownDown", false);
+            }
+            else
+            {
+                hit.DuckInterraction("SpeedUp", false);
+            }
+        }
+    }
+
+    //? In bound logic ..............................
+    private void OnSpawn(int sentNumber)
+    {
+        if (!iHaveNumber)
+        {
+            idName = sentNumber;
+            iHaveNumber = true;
+        }
+    }
+    private void OnUpdateTranform(Vector3 spawnPos, int sentNumber)
+    {
+        if (idName != sentNumber)
+        {
+            return;
+        }
+        speedUp = false;
+        transform.position = spawnPos;
+        int yPos = Mathf.RoundToInt(transform.position.y);
+        SetLayer(yPos);
+        speedUp = UnityEngine.Random.Range(0, 2) == 0;
+        WaterDirection();
+        spriteRenderer.color = startingColors[Random.Range(0, startingColors.Length)];
+        animationPath.speed = Random.Range(0.2f, 0.5f);
+    }
+
+    private void OnAnimationUp()
+    {
+        transform.DOScaleY(1.0138f, .5f).SetEase(Ease.OutExpo).OnComplete(() =>
+       {
+           waveScaling = transform.DOScaleY(1.2f, RandomNumber()).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutBack);
+       });
+    }
+
+    private void OnDespawn()
+    {
+        speedUp = false;
+        waveScaling.Kill();
+        transform.DOScaleY(0, .5f).SetEase(Ease.OutExpo);
+    }
+
+    //? Helper funcitono ............................
+    private void WaterDirection()
+    {
+        if (!speedUp)
+        {
+            spriteRenderer.flipX = false;
+        }
+        else
+        {
+            spriteRenderer.flipX = true;
+        }
+
     }
 
     private int RandomNumber()
@@ -79,39 +128,11 @@ public class WaterSpeedTrap : MonoBehaviour
         return randomNumber;
     }
 
-   
-    private void OnSpawn()
+    private int SetLayer(int pos)
     {
-        transform.DOScaleY(1.0138f, .5f).SetEase(Ease.OutExpo);
-    }
-
-    private void OnDeSpawn()
-    {
-        waveScaling.Kill();
-        transform.DOScaleY(0, .5f).SetEase(Ease.OutExpo);
-        StartCoroutine(WaitSomeTime(false));
-
-    }
-
-    private void GetLayer(int layer)
-    {
-        if(!hasLayer)
-        {
-            sprite.sortingOrder = layer;
-            hasLayer = true;
-        }
-    }
-
-    private IEnumerator WaitSomeTime(bool scale)
-    {
-        yield return new WaitForSeconds(.9f);
-        if(scale)
-        {
-           waveScaling = transform.DOScaleY(1.2f, RandomNumber()).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutBack);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        int baseSortingOrder = 40;
+        int offset = -pos;
+        spriteRenderer.sortingOrder = baseSortingOrder + offset;
+        return baseSortingOrder;
     }
 }

@@ -6,18 +6,16 @@ public class DuckMovement : MonoBehaviour
 {
     [SerializeField] Vector3 startPos;
     [SerializeField] float speedSet;
-    [SerializeField] float storedSpeed;
-    [SerializeField] bool slowDownCheck;
     [SerializeField] bool movementGo;
+    private float storedSpeed;
 
     private bool stoptacking;
     private bool alreadyHappening; // so it doesn't trigger event twice.
+    public bool canChangeSpeed;
     private DuckManager duckManager;
 
     private Tween roationTwen;
-    private bool isHappy;
     private GameObject finishLine;
-    private string myName;
 
     //Set up---------------------------------------------
     private void Awake()
@@ -27,65 +25,35 @@ public class DuckMovement : MonoBehaviour
 
     void Start()
     {
-        this.transform.Rotate(-15,0,0);
+        this.transform.Rotate(-15, 0, 0);
         startPos = transform.position;
         SetSpeed();
         StartCoroutine(OnLoadAnim());
         finishLine = GameObject.FindWithTag("FinishLine");
         stoptacking = false;
     }
- 
+
     //Logic ----------------------------------------------- 
     void Update()
     {
-        if (movementGo)
+        if (!movementGo)
+            return;
+
+
+        transform.Translate(speedSet * Time.deltaTime * Vector2.right);
+        if (!stoptacking)
         {
-            transform.Translate(speedSet * Time.deltaTime * Vector2.right);
-            if(!stoptacking)
-            {
-                float distance = Vector3.Distance(gameObject.transform.position, finishLine.transform.position);
-                duckManager.GetPostion(distance); // Send to duck manager to send to game manager to track postion for camera.
-            }
+            float distance = Vector3.Distance(gameObject.transform.position, finishLine.transform.position);
+            duckManager.GetPostion(distance); // Send to duck manager to send to game manager to track postion for camera.
         }
     }
-
-    //Trigger dection logic ---------------------------------
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        //Please switch this to an interface
-        if (collision.gameObject.tag == "SlowDown")
-        {
-            SlowDownDuck();
-            isHappy = false;
-        }
-        if (collision.gameObject.tag == "SpeedUp")
-        {
-            SpeedUpDuck();
-            isHappy = true;
-        }
-        if(collision.gameObject.tag == "FinishLine")
-        {
-            duckManager.CrossedFinishLine();
-            stoptacking = true;
-        }
-        duckManager.SpeedChanged(true, isHappy);
-    }
-
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        ResetSpeed();
-        duckManager.SpeedChanged(false, false);
-        alreadyHappening = false;   
-    }
-
-
 
     //Speed And Postion setup (Incoming Info) ------------------------------
     public float SetSpeed()
     {
-        float speed = Random.Range(1.5f, 3.5f);
-        speedSet = speed;
+        float speed = UnityEngine.Random.Range(3.5f, 5f);
         storedSpeed = speed;
+        speedSet = speed;
         GetSpeed(speed);
         return speed;
     }
@@ -99,6 +67,7 @@ public class DuckMovement : MonoBehaviour
     public void MovementStart()
     {
         movementGo = true;
+        canChangeSpeed = true;
     }
     public void MovementStop()
     {
@@ -107,44 +76,76 @@ public class DuckMovement : MonoBehaviour
         roationTwen.Kill();
     }
 
-    private void SlowDownDuck()
+
+    //Inbound commands from manager ------------------------------------------
+    public void SlowDownDuck()
     {
-        if (!alreadyHappening)
-        {
-            if (speedSet > 3)
-            {
-                speedSet -= 3;
-            }
-            else
-            {
-                speedSet = .5f;
-            }
-            alreadyHappening = true;
-            GetSpeed(speedSet);
-        }
+        if (alreadyHappening)
+            return;
+        if (!canChangeSpeed)
+            return;
+
+        speedSet -= 2;
+        alreadyHappening = true;
+        GetSpeed(speedSet);
     }
-    private void SpeedUpDuck()
+    public void SpeedUpDuck()
     {
-        speedSet += 3;
+        if (!canChangeSpeed)
+            return;
+        speedSet += 2;
+        GetSpeed(speedSet);
+    }
+    public void SpeedStop()
+    {
+        speedSet = 0;
         GetSpeed(speedSet);
     }
 
-    private void ResetSpeed()
+    public void RocketSpeed()
     {
-        speedSet = storedSpeed;
-        GetSpeed(storedSpeed);
+        speedSet += 5;
+        GetSpeed(speedSet);
     }
-    private void GetSpeed(float speedToDuckManager)
+
+    public void TauntSpeed()
     {
-        duckManager.GetSpeed(speedToDuckManager);
+        speedSet = 1;
+        GetSpeed(speedSet);
+    }
+
+    public void ResetSpeed()
+    {
+        if (!canChangeSpeed)
+            return;
+        speedSet = storedSpeed;
+        GetSpeed(speedSet);
+        alreadyHappening = false;
     }
 
     public void ChangeYPostion(int i)
     {
         //Game not started get out of it.
-        //if (!movementGo) return;
+        if (!movementGo) return;
 
         transform.DOMoveY(transform.position.y + i, .5f).SetEase(Ease.InOutBack);
+    }
+
+    public void SlowDownAfterFinishLineCross()
+    {
+        ResetSpeed();
+        StartCoroutine(SlowDownOverTime());
+    }
+    public void CleanUP()
+    {
+        StopAllCoroutines();
+    }
+
+
+    //Outbound commnads --------------------------------------------------------------
+    private void GetSpeed(float speedToDuckManager)
+    {
+        duckManager.GetSpeed(speedToDuckManager);
     }
 
 
@@ -154,8 +155,8 @@ public class DuckMovement : MonoBehaviour
         speedSet = 0;
         stoptacking = false;
     }
-    
-    
+
+
 
     //on load timer -----------------------------------------------------------------------
     private IEnumerator OnLoadAnim()
@@ -164,5 +165,15 @@ public class DuckMovement : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         transform.DOMoveY(startPos.y, .5f, false).SetEase(Ease.OutBounce);
         duckManager.DuckTouchedWater();
+    }
+
+    private IEnumerator SlowDownOverTime()
+    {
+        while (0 <= speedSet)
+        {
+            yield return new WaitForSeconds(0.2f);
+            speedSet -= 0.5f;
+        }
+        SpeedStop();
     }
 }

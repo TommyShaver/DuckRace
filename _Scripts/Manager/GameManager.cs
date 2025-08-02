@@ -3,7 +3,6 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Linq;
-using DG.Tweening;
 
 public class GameManager : MonoBehaviour
 {
@@ -16,11 +15,9 @@ public class GameManager : MonoBehaviour
 
     private List<string> nameStored = new List<string>();
     private bool winner;
-    private bool canSelect;
 
-    private bool resetCalled;
     private bool stopTracking;
-    private string hotStreakName;
+    private bool gameAutomatic;
     private float timer = .5f;
 
     public static event Action OnClearPlayers;
@@ -29,6 +26,7 @@ public class GameManager : MonoBehaviour
     public static event Action OnStopDucks;
     public static event Action OnGrabLocation;
     public static event Action OnWinner;
+ 
 
     private void Awake()
     {
@@ -41,9 +39,18 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+
+        canGo = false;
         stopTracking = true;
-        canSelect = true;
     }
+
+    private void Start()
+    {
+        CameraShotsScript.instance.ChangeCamera();       
+    }
+
+
     private void Update()
     {
         timer -= Time.deltaTime;
@@ -55,12 +62,12 @@ public class GameManager : MonoBehaviour
     }
 
     //Get location of ducks ---------------------------------------------------------------
-
     public void DucksDictinoary(string userName, float speed)
     {
         duckLocation.Add(userName, 0);
         duckSpeed.Add(userName, 0);
     }
+
     public void DucksSpeed(string userName, float speed)
     {
         duckSpeed[userName] = speed;
@@ -82,185 +89,97 @@ public class GameManager : MonoBehaviour
         {
             GameWinner();
             winner = true;
-            if (hotStreakName == names)
-            {
-                //check to see if its the same person.
-                UIManager.Instance.hotStreakText.text = "Cheating: " + hotStreakName;
-            }
-            else
-            {
-                hotStreakName = names;
-                UIManager.Instance.hotStreakText.text = string.Empty;
-            }
         }
-        UIManager.Instance.NamePlateLogic(names);
     }
 
     private void GameWinner()
     {
         OnWinner?.Invoke();
-
+        OnStopDucks?.Invoke();
         stopTracking = true;
-        resetCalled = false;
         StartCoroutine(WaitForEnd());
-        UIManager.Instance.joinText.fontSize = 75;
-        UIManager.Instance.joinText.DOFade(1, 0);
-        UIManager.Instance.joinText.text = "WINNER!";
-        UIManager.Instance.winnerNameText.text = nameStored[0] + "!";
-        UIManager.Instance.GameOverButtons(true);
-        UIManager.Instance.EndOfGameBorder();
-        PlayField.instance.DespwanTrapsObject(false);
-        SoundManager.instance.Horn_SFX(11);
-        MusicManager.instance.EndOfGameMusicStart();
-        MusicManager.instance.CleanUpMainLoop();
-        SoundManager.instance.EndGameCheeringPlayer();
-        ScoreBoradManager.instance.ScoreUpdate(nameStored[0]);
-        ScoreBoradManager.instance.MoveOnScreen();
-        
+        CameraManager.instance.StopCamera();
     }
 
-    //Public UI Methods (This is called via twitch commadns or code.) ---------------------
+    //? int Main if you will.-------------------
     public void GameStart()
     {
-        if(canGo)
+        if (canGo)
         {
             StartCoroutine(CountDownToGo());
-            UIManager.Instance.ShowHideStartButton(false);
             canGo = false;
-            SoundManager.instance.StartGame_SFX();
-            MusicManager.instance.IntroLoadingMusicEnd();
+            CameraShotsScript.instance.TurnOffCamera();
         }
     }
 
     public void GameReset()
     {
-        if(canSelect)
-        {
-            OnResetPlayers?.Invoke(); //Duck Manager
-            OnWinner?.Invoke(); // Reset Remote Sound Players 
 
-            nameStored.Clear();
-            winner = false;
-            resetCalled = true;
-            stopTracking = true;
-
-            CameraManager.instance.GameReset();
-            PlayField.instance.DespwanTrapsObject(true);
-            SpawnManager.Instance.CanSpawn(true);
-            //TwitchManager.instance.gameStarted = false;
-            UIManager.Instance.joinText.text = string.Empty;
-            UIManager.Instance.winnerNameText.text = string.Empty;
-            UIManager.Instance.GameOverButtons(false);
-            UIManager.Instance.ShowHideStartButton(true);
-            UIManager.Instance.ResetEndOfGameUI();
-            StopCoroutine(CountDownToGo());
-            canGo = true;
-            canSelect = false;
-            StartCoroutine(ButtonSelected());
-            MusicManager.instance.EndOfGameMusicEnd();
-            MusicManager.instance.IntroLoadingMusicStart();
-            MusicManager.instance.CleanUpMainLoop();
-            SoundManager.instance.playedOnce = false;
-            SoundManager.instance.EndGameCheeringPlayer();
-            ScoreBoradManager.instance.MoveOffScreen();
-        }
+        canGo = true;
+        winner = false;
+        stopTracking = true;
+        OnResetPlayers?.Invoke(); //Duck Manager
+        CameraManager.instance.GameReset();
+        SpawnManager.Instance.CanSpawn(true);
+        WaterTrapSpawner.Instance.WaterTrapsDespawn();
+        SpawnManager.Instance.TryToSpawnAgain();
+        CameraShotsScript.instance.ChangeCamera();   
     }
 
     public void GameClear()
     {
-        if(canSelect)
-        {
-            OnClearPlayers?.Invoke(); //Duck Manager
-            OnWinner?.Invoke(); // Reset Remote Sound Players
-
-            nameStored.Clear();
-            duckLocation.Clear();
-            duckSpeed.Clear();
-            winner = false;
-            resetCalled = true;
-            stopTracking = true;
-
-            CameraManager.instance.GameReset();
-            PlayField.instance.DespwanTrapsObject(true);
-            SpawnManager.Instance.ResetSpawnCount();
-            SpawnManager.Instance.CanSpawn(true);
-            //TwitchManager.instance.gameStarted = false;
-            UIManager.Instance.ShowHideStartButton(false);
-            UIManager.Instance.GameOverButtons(false);
-            UIManager.Instance.joinText.fontSize = 75;
-            UIManager.Instance.joinText.text = "!Join to join the game";
-            UIManager.Instance.joinText.DOFade(1, 0);
-            UIManager.Instance.winnerNameText.text = string.Empty;
-            UIManager.Instance.ResetEndOfGameUI();
-            UIManager.Instance.resetButtonMenu.SetActive(false);
-            StopCoroutine(CountDownToGo());
-            canGo = true;
-            canSelect = false;
-            StartCoroutine(ButtonSelected());
-            MusicManager.instance.EndOfGameMusicEnd();
-            MusicManager.instance.IntroLoadingMusicStart();
-            MusicManager.instance.CleanUpMainLoop();
-            SoundManager.instance.playedOnce = false;
-            SoundManager.instance.EndGameCheeringPlayer();
-            ScoreBoradManager.instance.MoveOffScreen();
-            ScoreBoradManager.instance.CleanUp();
-        }
+        canGo = true;
+        winner = false;
+        stopTracking = true;
+        OnClearPlayers?.Invoke(); //Duck Manager
+        nameStored.Clear();
+        duckLocation.Clear();
+        duckSpeed.Clear();
+        CameraManager.instance.GameReset();
+        SpawnManager.Instance.ResetSpawnCount();
+        WaterTrapSpawner.Instance.WaterTrapsDespawn();
+        SpawnManager.Instance.CanSpawn(true);
+        CameraShotsScript.instance.ChangeCamera();   
     }
 
 
     private IEnumerator WaitForEnd()
     {
         yield return new WaitForSeconds(15);
-        if (!resetCalled)
+        GameReset();
+        if (gameAutomatic)
         {
-            OnStopDucks?.Invoke();
-            CameraManager.instance.StopCamera();
+            GameStart();
         }
     }
 
+
+    //Count down for game start.
     private IEnumerator CountDownToGo()
     {
-        yield return new WaitForSeconds(.5f);
+        yield return new WaitForSeconds(.5f); //clear UI
         int count;
-        for(count = 0; count <= 3; count++)
-        {
-           switch(count)
+        for (count = 0; count <= 3; count++) //Start funciton each call happens 1.2 seconds
             {
-                case 0:
-                    UIManager.Instance.AnimateCountDownText("3", .5f);
-                    SoundManager.instance.Horn_SFX(9);
-                    //Play Sound
+                switch (count)
+                {
+                    case 0:
+                        WaterTrapSpawner.Instance.WaterTrapsTransformUpdate();
+                        CameraManager.instance.SetCameraForRace(); //This will update the spawn postion of water speed traps.
                     break;
-                case 1:
-                    UIManager.Instance.AnimateCountDownText("2", .5f);
-                    PlayField.instance.StartSpawn();
-                    SoundManager.instance.Horn_SFX(9);
-                    //Play Sound
+                    case 1:
+                        SpawnManager.Instance.CanSpawn(false);
+                        break;
+                    case 2:
+                        WaterTrapSpawner.Instance.WaterTrapsAnimationUp();
                     break;
-                case 2:
-                    UIManager.Instance.AnimateCountDownText("1", .5f);
-                    SoundManager.instance.Horn_SFX(9);
-                    //Play Sound
-                    break;
-                case 3:
-                    UIManager.Instance.AnimateCountDownText("GO!", 1.2f);
-                    SoundManager.instance.Horn_SFX(10);
-                    //Play Go Sound
-                    OnDucksGo?.Invoke(); //Duck Manager
-                    stopTracking = false;
-                    CameraManager.instance.WaitAndGo();
-                    SpawnManager.Instance.CanSpawn(false);
-                    MusicManager.instance.MainLoopIntro();
-                    break;
-            }    
-            yield return new WaitForSeconds(1.2f);
-        }
+                    case 3:
+                        OnDucksGo?.Invoke(); //Duck Manager
+                        stopTracking = false;
+                        CameraManager.instance.WaitAndGo();
+                        break;
+                }
+                yield return new WaitForSeconds(1.2f);
+            }
     }
-    private IEnumerator ButtonSelected() 
-    {
-        yield return new WaitForSeconds(.5f);
-        canSelect = true;
-    }
-
-    //Debug menu -------------------------------------------
 }

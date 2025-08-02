@@ -1,8 +1,9 @@
 using System.Collections;
 using UnityEngine;
 
-public class DuckManager : MonoBehaviour
+public class DuckManager : MonoBehaviour, DuckInterractionInterface, ICrossGoal
 {
+
     //Grab other Scripts
     private DuckMovement duckMovement;
     private DuckTextUserName duckText;
@@ -11,6 +12,8 @@ public class DuckManager : MonoBehaviour
     private DucksParticalSystem duckEffects;
     private DuckHats duckHats;
     private DucksQuack duckSound;
+    private DuckItems duckItems;
+    private DucksNoise ducksNoise;
 
     //Incoming local var
     private float postionFromGoal;
@@ -29,6 +32,9 @@ public class DuckManager : MonoBehaviour
         duckEffects = GetComponentInChildren<DucksParticalSystem>();
         duckHats = GetComponentInChildren<DuckHats>();
         duckSound = GetComponentInChildren<DucksQuack>();
+        duckItems = GetComponentInChildren<DuckItems>();
+        ducksNoise = GetComponentInChildren<DucksNoise>();
+        
     }
     private void OnEnable()
     {
@@ -82,13 +88,17 @@ public class DuckManager : MonoBehaviour
             Debug.Log(username + " " + layer + " <- username DuckManager");
             duckEffects.SpawnParticleSystem(layer);
             duckFace.FaceLayer(layer);
-            duckSound.Quack();
+            duckSound.DuckSFX(DucksQuack.SampledClips.quackSFX);
+            duckItems.SpawnDuckItems(layer);
+            ducksNoise.ChangeSortingLayer(layer);
         }
     }
 
+
+
     public void DuckTouchedWater()
     {
-        duckSound.SplashSFX();
+        duckSound.DuckSFX(DucksQuack.SampledClips.SplashSFX);
         duckEffects.DuckLandInWater();
     }
 
@@ -101,7 +111,7 @@ public class DuckManager : MonoBehaviour
     public void MovementStart()
     {
         duckMovement.MovementStart();
-        duckColor.SpriteRoation(true); // I had to do it this way to not change the directoin of gameobject. or I would just leave this on the gameobject.
+        duckColor.SpriteRoation(); // I had to do it this way to not change the directoin of gameobject. or I would just leave this on the gameobject.
         duckEffects.EffectStart();
     }
 
@@ -112,7 +122,7 @@ public class DuckManager : MonoBehaviour
 
 
 
-    //Out Bound Logic ------------------------------------------------------
+    //Call to GameManager Logic ------------------------------------------------------
     public void GetPostion(float distance)
     {
         postionFromGoal = distance;
@@ -122,13 +132,23 @@ public class DuckManager : MonoBehaviour
         changedSpeed = speed;
         SendSpeedToGameManager();
     }
+
+
+
+
+
     private void SendPostionTOGameManger()
     {
-        //GameManager.instance.WhoIsFisrt(duckText.GetName(), postionFromGoal);
+        GameManager.instance.WhoIsFisrt(duckText.GetName(), postionFromGoal);
     }
+
+
+
+
+
     private void SendSpeedToGameManager()
     {
-        // GameManager.instance.DucksSpeed(duckText.GetName(), changedSpeed);
+        GameManager.instance.DucksSpeed(duckText.GetName(), changedSpeed);
     }
 
 
@@ -147,12 +167,22 @@ public class DuckManager : MonoBehaviour
         duckColor.ChatMemberChangedColor(color);
     }
 
+
+
+
+
+
     private void ChangeHatRequst(string user, string propty, string hat)
     {
         if (user != myName) return;
 
         duckHats.ChangeHat(hat);
     }
+
+
+
+
+
 
     private void ChangeYRequst(string user, string movement)
     {
@@ -164,46 +194,101 @@ public class DuckManager : MonoBehaviour
         {
             case "up" when currentY != 1:
                 direction = 1;
+                ChangeLayerOfDuck(-1);
                 break;
             case "down" when currentY != -5:
                 direction = -1;
+                ChangeLayerOfDuck(1);
                 break;
         }
 
-        if(direction != 0)
+        if (direction != 0)
         {
-            duckText.DuckChangedLayer(direction);
-            duckFace.DuckChangedLayer(direction);
-            duckEffects.DuckChangedLayer(direction);
-            duckHats.DuckChangedLayer(direction);
-            duckColor.DuckChangedLayer(direction);
             duckMovement.ChangeYPostion(direction);
         }
     }
+
+
+    private void ChangeLayerOfDuck(int layer)
+    {
+        duckText.DuckChangedLayer(layer);
+        duckFace.DuckChangedLayer(layer);
+        duckEffects.DuckChangedLayer(layer);
+        duckHats.DuckChangedLayer(layer);
+        duckColor.DuckChangedLayer(layer);
+        duckItems.DuckChangedLayer(layer);
+        ducksNoise.DuckChangedLayer(layer);
+    }
+
+
+
 
     private void PlayQuackDuck(string user)
     {
         if (user != myName) return;
 
-        duckSound.Quack();
+        duckSound.DuckSFX(DucksQuack.SampledClips.quackSFX);
     }
+
+
+
+
     private void PlayTauntDuck(string user)
     {
         if (user != myName) return;
 
-        //Play taunt effect
+        duckColor.AnimTaunt();
+        duckMovement.TauntSpeed();
+        ducksNoise.FlipSprite(false);
+        duckFace.FlipSprite(false);
     }
+
+
+
+
+
+    public void GetOutOfTauntAnim()
+    {
+        duckMovement.ResetSpeed();
+        ducksNoise.FlipSprite(true);
+        duckFace.FlipSprite(true);
+    }
+
+
+    public void UseRocket()
+    {
+        duckSound.DuckSFX(DucksQuack.SampledClips.quackHappySFX);
+        duckMovement.canChangeSpeed = false;
+        duckMovement.RocketSpeed();
+        duckFace.RandomFace(false);
+        duckColor.RocketAnim();
+    }
+
+    public void GetOutOfRocket()
+    {
+        duckMovement.canChangeSpeed = true;
+        duckMovement.ResetSpeed();
+        duckFace.DefaultFace();
+        duckColor.ReturnOutOfAnimation();
+    }
+
 
     private void ItemRequestUse(string user)
     {
         if (user != myName) return;
+        duckItems.UseItem();
+        Debug.Log("Item Used Fucntion Trigger");
 
-        //Use items
     }
+
+
+
+
+
+    //! GET THIS GUY OUT OF HERE.................................
     private void BanPlayer(string user)
     {
         if (user != myName) return;
-        Debug.Log("why did i ban a player?");
         SaveDataManager.instance.BanPlayerFromJoining(user);
         DestoryDuck();
     }
@@ -211,7 +296,6 @@ public class DuckManager : MonoBehaviour
     private void ClearPlayer(string user)
     {
         if (user != myName) return;
-        Debug.Log("Cleared player");
         SpawnManager.Instance.ClearPlayerFromSpot(user);
         DestoryDuck();
     }
@@ -235,10 +319,17 @@ public class DuckManager : MonoBehaviour
     }
 
 
+
+
     public void CrossedFinishLine()
     {
-        //GameManager.instance.DucksCrossedFinishLine(duckText.GetName());
+        GameManager.instance.DucksCrossedFinishLine(duckText.GetName());
+        duckMovement.SlowDownAfterFinishLineCross();
+        duckEffects.EffectStop();
+        duckColor.KillTween();
     }
+
+
 
     private void DucksStop()
     {
@@ -247,7 +338,7 @@ public class DuckManager : MonoBehaviour
     }
 
 
-   
+
 
     //Clean up ---------------------------------------------------------
     public void ResetDuck()
@@ -258,12 +349,100 @@ public class DuckManager : MonoBehaviour
         duckColor.KillTween();
         postionFromGoal = 0;
         duckEffects.EffectStop();
+        duckItems.ResetCleanUp();
+        duckMovement.CleanUP();  
     }
 
     public void DestoryDuck()
     {
         duckColor.KillTween();
-        duckSound.ClearSFX();
-        Destroy(gameObject, 1);
+        Destroy(gameObject, .5f);
+    }
+
+
+
+
+
+
+
+
+
+
+
+    //Interface --------------------------------------------------------
+    public void DuckInterraction(string what, bool ishappening)
+    {
+        //not the sexist code but it works for now, 
+        if (ishappening)
+        {
+            switch (what)
+            {
+                case "SlownDown" when ishappening == true:
+                    duckMovement.SlowDownDuck();
+                    duckFace.RandomFace(false);
+                    duckSound.DuckSFX(DucksQuack.SampledClips.quackSadSFX);
+                    break;
+                case "SpeedUp" when ishappening == true:
+                    duckMovement.SpeedUpDuck();
+                    duckFace.RandomFace(true);
+                    duckSound.DuckSFX(DucksQuack.SampledClips.quackHappySFX);
+                    break;
+                case "RockHitDuck" when ishappening == true:
+                    if (duckItems.usingIntertube)
+                    {
+                        duckItems.CleanUpItemBoxes();
+                        return;
+                    }
+                    duckColor.SpriteSpin();
+                    duckMovement.SpeedStop();
+                    duckSound.DuckSFX(DucksQuack.SampledClips.quackSadSFX);
+                    duckFace.RandomFace(false);
+                    duckSound.DuckSFX(DucksQuack.SampledClips.IntertubeDespawnSFX);
+                    StartCoroutine(ReturnToDefault());
+                    DuckTouchedWater();
+                    break;
+                case "Boulder" when ishappening == true:
+                    duckMovement.SpeedStop();
+                    duckFace.RandomFace(false);
+                    duckSound.DuckSFX(DucksQuack.SampledClips.quackSadSFX);
+                    GetOutOfRocket();
+                    // TODO: Text Manager I hit a rock with name.
+                    break;
+                case "GotItem":
+                    duckItems.GetItem();
+                    duckSound.DuckSFX(DucksQuack.SampledClips.getItemSFX);
+                    // TODO: Text Manager got item with name.
+                    break;
+                case "FinishLine":
+                    GameManager.instance.DucksCrossedFinishLine(myName);
+                    break;
+            }
+        }
+        else
+        {
+            switch (what)
+            {
+                case "SlownDown":
+                    duckMovement.ResetSpeed();
+                    duckFace.DefaultFace();
+                    break;
+                case "SpeedUp":
+                    duckMovement.ResetSpeed();
+                    duckFace.DefaultFace();
+                    break;
+                case "Boulder":
+                    duckMovement.ResetSpeed();
+                    duckFace.DefaultFace();
+                    break;
+
+            }
+        }
+    }
+
+    private IEnumerator ReturnToDefault()
+    {
+        yield return new WaitForSeconds(2);
+        duckMovement.ResetSpeed();
+        duckFace.DefaultFace();
     }
 }

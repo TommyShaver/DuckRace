@@ -53,7 +53,11 @@ public class TwitchEventListner : MonoBehaviour
         TwitchManager.OnChatMessage -= ChatListner;
     }
 
-
+    private void Start()
+    {
+        //twitchUserName = SaveDataManager.instance.twitchStreamer;
+        //trustedMod = SaveDataManager.instance.trustedMod;
+    }
 
 
 
@@ -107,19 +111,22 @@ public class TwitchEventListner : MonoBehaviour
                 case "!go":
                     GameManager.instance.GameStart();
                     break;
+                case "!start":
+                    GameManager.instance.GameStart();
+                    break;
             }
 
-            if(message.StartsWith("!ban ", StringComparison.OrdinalIgnoreCase))
+            if(message.StartsWith("!ban @", StringComparison.OrdinalIgnoreCase))
             {
-                string playerBanned = message.Substring(5).ToLowerInvariant();
+                string playerBanned = message.Substring(6).ToLowerInvariant();
                 if(playerBanned != twitchUserName)
                 {
                     OnBanPlayer?.Invoke(playerBanned);
                 }
             }
-            if (message.StartsWith("!remove ", StringComparison.OrdinalIgnoreCase))
+            if (message.StartsWith("!remove @", StringComparison.OrdinalIgnoreCase))
             {
-                string playerBanned = message.Substring(8).ToLowerInvariant();
+                string playerBanned = message.Substring(9).ToLowerInvariant();
                 if (playerBanned != twitchUserName)
                 {
                     OnClearPlayer?.Invoke(playerBanned);
