@@ -1,6 +1,7 @@
-using System.Collections;
+using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 
@@ -11,12 +12,12 @@ public class TwitchManager : MonoBehaviour
     private StreamReader reader;
     private StreamWriter writer;
 
+
     private string username = "justinfan1234";
     private string passsword = "testtesttest";
-    private string channelName = "plus5armor"; // <- this need to be public for user to change.
+    private string channelName = "plus5armor";
 
-    public delegate void ChatMessageListener(string message, string parameters);
-    public event ChatMessageListener ChatmessageListeners;
+    public static event Action<string, string> OnChatMessage;
 
 
     //Set up unity ---------------------------------------------------------------------
@@ -33,16 +34,22 @@ public class TwitchManager : MonoBehaviour
     }
     private void Start()
     {
-        TryToConnectTwitch();
+        WhichPlatform();
     }
 
     private void Update()
     {
-        ReadChat();
+        ReadChatComputer();
+    }
+
+    // Which platform are we using ----------------------------------------------------
+    private void WhichPlatform()
+    {
+        TryToConnectTwitchComputer();
     }
 
     //Logic ----------------------------------------------------------------------------
-    private void TryToConnectTwitch()
+    private void TryToConnectTwitchComputer()
     {
         try
         {
@@ -61,11 +68,12 @@ public class TwitchManager : MonoBehaviour
         {
             Debug.Log("This did not work.");
         }
+
     }
 
-    private void ReadChat()
+    private void ReadChatComputer()
     {
-        if(twitchClient.Available > 0)
+        if (twitchClient.Available > 0)
         {
             string message = reader.ReadLine();
             if (message.Contains("PING"))
@@ -81,27 +89,26 @@ public class TwitchManager : MonoBehaviour
                 string chatName = message.Substring(1, splitPoint - 1);
                 splitPoint = message.IndexOf(":", 1);
                 string chatMessage = message.Substring(splitPoint + 1);
-                ChatmessageListeners?.Invoke(chatName, chatMessage);
-                //Debug.Log(chatName + " "  + chatMessage);
-                if(chatMessage == "!Join")
-                {
-                    SpawnManager.Instance.IncomingData(chatName); //To Spawn Manager
-                }
+                string updatedMessage = CleanUpMessage(chatMessage);
+                OnChatMessage?.Invoke(chatName, updatedMessage);
+                Debug.Log(chatName + " " + updatedMessage);
             }
         }
     }
 
-    //UI Function ------------------------------------------------------------------------
-    public void ReconnectToTwitch()
+    private string CleanUpMessage(string input)
     {
-        TryToConnectTwitch();
+        bool containsEmoji = Regex.IsMatch(input, @"[\uD800-\uDBFF][\uDC00-\uDFFF]");
+        if (containsEmoji)
+        {
+            return input.Substring(0, input.Length - 3);
+        }
+        return input;
     }
 
-    public void SwitchTwitchUserName(string s)
+    public void SwitchStreamers(string name)
     {
-        channelName = s;
-        TryToConnectTwitch();
-        Debug.Log(s);
+        channelName = name;
+        WhichPlatform();
     }
-    
 }
