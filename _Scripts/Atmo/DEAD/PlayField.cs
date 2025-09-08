@@ -1,0 +1,85 @@
+using System.Collections.Generic;
+using System;
+using UnityEngine;
+
+
+public class PlayField : MonoBehaviour
+{
+    public static PlayField instance;
+    public GameObject spawnWaterTrap;
+    [SerializeField] private int spawnCount = 100;
+    private List<GameObject> spawnObjectList = new List<GameObject>();
+
+
+    public static event Action OnDespawn;
+    public static event Action<int> OnSpawnWaves;
+
+    private int layerNumber = 35;
+
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(this);
+        }
+    }
+
+    private void SpawnHeadWaterTrap()
+    {
+        for (int i = 0; i < spawnCount; i++)
+        {
+            Vector2 spawnHere = GetRandomPostion();
+
+            GameObject tempGameObejct = Instantiate(spawnWaterTrap, spawnHere, Quaternion.identity);
+            Bounds newBoundsTry = tempGameObejct.GetComponent<SpriteRenderer>().bounds;
+            bool overlapingBounds = false;
+            Destroy(tempGameObejct);
+            foreach (GameObject obj in spawnObjectList)
+            {
+                SpriteRenderer sripteBoudns = obj.GetComponent<SpriteRenderer>();
+                if (obj != null && newBoundsTry.Intersects(sripteBoudns.bounds))
+                {
+                    overlapingBounds = true;
+                    i--; //try again.
+                    break;
+                }
+            }
+            if (!overlapingBounds)
+            {
+                GameObject spawnedObject = Instantiate(spawnWaterTrap, spawnHere, Quaternion.identity); // adding a housing made unity crash spawn on the inspector as they please jerks.
+                spawnObjectList.Add(spawnedObject);
+                OnSpawnWaves?.Invoke(layerNumber);
+            }
+            layerNumber++;
+        }
+    }
+
+    private Vector2 GetRandomPostion()
+    {
+        Bounds bounds = this.GetComponent<SpriteRenderer>().bounds;
+        Vector2 randomPosition = new Vector2(
+          UnityEngine.Random.Range(bounds.min.x + 2, bounds.max.x - 2),
+          UnityEngine.Random.Range(bounds.min.y + 1, bounds.max.y - 1));
+        return randomPosition;
+    }
+
+    public void DespwanTrapsObject(bool withSound)
+    {
+        spawnObjectList.Clear();
+        OnDespawn?.Invoke();
+        if(withSound)
+        {
+            //SoundManager.instance.DeSpwanSpalsh_SFX(); OLD
+        }
+    }
+
+    public void StartSpawn() 
+    {
+        SpawnHeadWaterTrap();
+        //SoundManager.instance.SpawnSpalsh_SFX(false); OLD
+    }
+}
