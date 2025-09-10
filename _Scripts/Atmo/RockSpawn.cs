@@ -7,11 +7,11 @@ public class RockSpawn : MonoBehaviour
     [SerializeField] private GameObject boulderPrefab;
     [SerializeField] private GameObject holdItemsGameObject;
     private float spawnPosX;
-    private float[] placementArray = { 1, 0, -1, -2, -3 , -4, -5};
+    private float[] placementArray = { 1, 0, -1, -2, -3, -4, -5 };
     private SpriteRenderer spriteRenderer;
     private bool canSpawnRocks = true;
+    private bool hasSpawned;
     private float checkLastPos;
-
 
     private void Awake()
     {
@@ -21,12 +21,16 @@ public class RockSpawn : MonoBehaviour
     {
         UIButtonScript.OnUIButtonSwitch += LetRocksSpawn;
         GameManager.OnRockPlacementUpdate += SpawnRock;
+        GameManager.OnResetPlayers += CleanUp;
+        GameManager.OnClearPlayers += CleanUp;
     }
 
     private void OnDisable()
     {
         UIButtonScript.OnUIButtonSwitch -= LetRocksSpawn;
         GameManager.OnRockPlacementUpdate -= SpawnRock;
+        GameManager.OnResetPlayers -= CleanUp;
+        GameManager.OnClearPlayers -= CleanUp;
     }
 
     void Start()
@@ -42,7 +46,7 @@ public class RockSpawn : MonoBehaviour
     private void LetRocksSpawn(bool canSpawn, string command)
     {
         canSpawnRocks = canSpawn;
-        
+
         if (canSpawn && command == "rock")
             SpawnRock();
     }
@@ -50,8 +54,9 @@ public class RockSpawn : MonoBehaviour
     //Spanw Rock logic .......................
     private void SpawnRock()
     {
-        if (canSpawnRocks)
+        if (canSpawnRocks && !hasSpawned)
         {
+            hasSpawned = true;
             for (int i = 0; i < 2; i++)
             {
                 Instantiate(boulderPrefab, RandomSpawnPos(), boulderPrefab.transform.rotation, holdItemsGameObject.transform);
@@ -73,7 +78,12 @@ public class RockSpawn : MonoBehaviour
                 break;
             }
         }
-       
+
         return updatedPos;
+    }
+
+    private void CleanUp()
+    {
+        hasSpawned = false;
     }
 }

@@ -19,7 +19,6 @@ public class DuckItems : MonoBehaviour
     public GameObject itemBoxSelect;
     public Sprite[] items;
     public SpriteRenderer itemSpriteRenderer;
-    private Tween bounceItem;
     private Vector3 resetTrasfrom;
 
     //Using items ........................
@@ -134,8 +133,6 @@ public class DuckItems : MonoBehaviour
 
     public void UseItem()
     {
-        Debug.Log("WE made to the topp of USeItem");
-        bounceItem.Kill();
         if (!canUseItem)
             return;
         CleanUpItemBoxes();
@@ -193,7 +190,6 @@ public class DuckItems : MonoBehaviour
         Debug.Log(items[(int)currentItem]);
         audioSource.Stop();
         audioSource.loop = false;
-        bounceItem = itemBoxSelect.transform.DOLocalMoveY(itemBoxSelect.transform.localPosition.y + .05f, 1f).SetEase(Ease.InOutBack).SetLoops(-1, LoopType.Restart);
     }
 
     private IEnumerator ItemAnim()

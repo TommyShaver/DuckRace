@@ -58,12 +58,7 @@ public class LoadingZoneScript : MonoBehaviour
         duckSpriteRenderer.DOFade(0, .5f);
         eyeSpriteRenderer.DOFade(0, .5f).OnComplete(() =>
         {
-            backgroundSpriteRenderer.DOFade(0, 0.5f).OnComplete(() =>
-            {
-                //Destroy(m_Camera);
-                Destroy(duckGameboject);
-            });
-            //SceneLoader.instance.UnloadLastScene(SceneLoader.LoadedScene.LoadingScene);
+            backgroundSpriteRenderer.DOFade(0, 0.5f);
         });
     }
 

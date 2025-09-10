@@ -55,16 +55,21 @@ public class SoundManager : MonoBehaviour
     /// </summary>
     public void StopAllPlayers()
     {
-        fadeTween.Kill();
         foreach (AudioSource audio in audioPlayer)
         {
-            warpPipeAudioSource.DOFade(0, .5f);
-            audio.DOFade(0, .3f).OnComplete(() =>
+            DOTween.Kill(audio); // kills tweens targeting this AudioSource
+            audio.DOFade(0, 0.3f).OnComplete(() =>
             {
                 audio.Stop();
+                audio.volume = 1f; // reset volume for next time
             });
         }
+
+        // Handle warp pipe separately so it doesn't get spammed in the loop
+        DOTween.Kill(warpPipeAudioSource);
+        warpPipeAudioSource.DOFade(0, 0.5f);
     }
+    
     public void FadeOutCheering()
     {
         endCheeringSoruce.DOFade(0, .5f);
@@ -120,24 +125,42 @@ public class SoundManager : MonoBehaviour
     /// <param name="fade"></param>
     private void AudioCallBack2D(AudioSource player, AudioClip clip, float volume, float fadeDuration, float pan, float pitch, float delayAudio, bool loop, bool fadeIn)
     {
-        Debug.Log("This audio function was called: " + clip);
-        player.volume = 1;
-        player.panStereo = 0;
-        player.pitch = 1;
-        player.clip = clip;
-        if (fadeIn)
+        if (player == null)
         {
-            player.volume = 0;
-            fadeTween = player.DOFade(volume, fadeDuration);
+            Debug.LogError("AudioCallBack2D called with null AudioSource. Aborting.");
+            return;
         }
-        else
+        if (clip == null)
         {
-            player.volume = volume;
+            Debug.LogError("AudioCallBack2D called with null AudioClip. Aborting.");
+            return;
         }
-        player.panStereo = pan;
-        player.pitch = pitch;
-        player.loop = loop;
-        player.PlayDelayed(delayAudio);
+
+        try
+        {
+            Debug.Log("This audio function was called: " + clip);
+            player.Stop();
+            player.clip = clip;
+            player.panStereo = pan;
+            player.pitch = pitch;
+            player.loop = loop;
+            if (fadeIn)
+            {
+                player.volume = 0;
+                fadeTween?.Kill();
+                fadeTween = player.DOFade(volume, fadeDuration);
+                player.PlayDelayed(delayAudio);
+            }
+            else
+            {
+                player.volume = volume;
+                player.PlayDelayed(delayAudio);
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("Exception in AudioCallBack2D: " + ex);
+        }
     }
 
     /// <summary>
@@ -146,21 +169,19 @@ public class SoundManager : MonoBehaviour
     /// <returns></returns>
     public int ReturnPlayer()
     {
-        int openAudioPlayer = 0;
-        for (int i = 0; i < audioPlayer.Length; i++)
+        if (audioPlayer == null || audioPlayer.Length == 0)
+        {
+            Debug.LogWarning("audioPlayer array is null or empty.");
+            return -1; // indicate none available
+        }
+
+       for (int i = 0; i < audioPlayer.Length; i++)
         {
             if (!audioPlayer[i].isPlaying)
-            {
-                openAudioPlayer = i;
-                break;
-            }
-            else
-            {
-                Debug.LogWarning("No audio sources available");
-            }
+                return i;
         }
-        Debug.Log(openAudioPlayer + "Opening Audio Function player");
-        return openAudioPlayer;
+        Debug.LogWarning("No audio sources available");
+        return 0;
     }
 
 

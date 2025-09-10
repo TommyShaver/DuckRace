@@ -6,6 +6,7 @@ public class Cheering_SFX : MonoBehaviour
     private AudioSource cheeringPlayer;
     private BoxCollider2D boxcollider2D;
     private bool playedOnce;
+    private Tween fadeStopTween;
 
     private void Awake()
     {
@@ -33,10 +34,12 @@ public class Cheering_SFX : MonoBehaviour
     {
         if(!playedOnce)
         {
+            cheeringPlayer.Stop();
+            fadeStopTween?.Kill();
             if (collision)
             {
                 cheeringPlayer.Play();
-                cheeringPlayer.DOFade(.1f, 3);
+                fadeStopTween = cheeringPlayer.DOFade(.1f, 3);
                 playedOnce = true;
             }
         }
@@ -44,7 +47,8 @@ public class Cheering_SFX : MonoBehaviour
 
     private void ZeroOut()
     {
-        cheeringPlayer.DOFade(0, .1f);
+        fadeStopTween?.Kill();
+        fadeStopTween = cheeringPlayer.DOFade(0, .1f);
         cheeringPlayer.Stop();
     }
     private void SetClears()

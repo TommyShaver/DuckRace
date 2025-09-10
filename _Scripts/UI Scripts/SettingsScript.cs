@@ -18,9 +18,9 @@ public class SettingsScript : MonoBehaviour
         {
             Destroy(gameObject);
         }
-        QualitySettings.vSyncCount = 0;
-        Application.targetFrameRate = 60;
-        DOTween.SetTweensCapacity(2000, 100);
+            Application.targetFrameRate = -1;
+           // QualitySettings.vSyncCount = 0;
+  
     }
     
 

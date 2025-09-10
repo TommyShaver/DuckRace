@@ -11,10 +11,10 @@ public class GameManager : MonoBehaviour
     public bool canGo;
     
 
-    private Dictionary<string, float> duckLocation = new Dictionary<string, float>();
-    private Dictionary<string, float> duckSpeed = new Dictionary<string, float>();
+    [SerializeField] private Dictionary<string, float> duckLocation = new Dictionary<string, float>();
+    [SerializeField] private Dictionary<string, float> duckSpeed = new Dictionary<string, float>();
 
-    private List<string> nameStored = new List<string>();
+    //private List<string> nameStored = new List<string>();
     private bool winner;
 
     private bool stopTracking;
@@ -64,7 +64,6 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         gameAutomatic = SaveDataManager.instance.autoPlayGo;
-        Debug.Log(gameAutomatic);
         CameraShotsScript.instance.ChangeCamera();
         PlayerWarningTextScript.instance.CleanUpWarningMessage();
         gameAutomatic = SaveDataManager.instance.autoPlayGo;
@@ -73,10 +72,11 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+
         timer -= Time.deltaTime;
         if (timer <= 0.0f && !stopTracking)
         {
-            timer = .5f;
+            timer = 0.5f;
             OnGrabLocation?.Invoke();
         }
     }
@@ -119,7 +119,7 @@ public class GameManager : MonoBehaviour
     //Grab winner of game -----------------------------------------------------------------
     public void DucksCrossedFinishLine(string names, string hat, Color color, bool isRainbow, bool isHolo)
     {
-        nameStored.Add(names);
+        //nameStored.Add(names);
         if (!winner)
         {
             GameWinner();
@@ -179,6 +179,7 @@ public class GameManager : MonoBehaviour
         CameraManager.instance.GameReset();
         SpawnManager.Instance.CanSpawn(true);
         WaterTrapSpawner.Instance.WaterTrapsDespawn();
+        WaterTrapSpawner.Instance.ClearPos();
         SpawnManager.Instance.TryToSpawnAgain();
         CameraShotsScript.instance.ChangeCamera();
         PlayerWarningTextScript.instance.CleanUpWarningMessage();
@@ -201,12 +202,13 @@ public class GameManager : MonoBehaviour
         winner = false;
         stopTracking = true;
         OnClearPlayers?.Invoke(); //Duck Manager
-        nameStored.Clear();
+        //nameStored.Clear();
         duckLocation.Clear();
         duckSpeed.Clear();
         CameraManager.instance.GameReset();
         SpawnManager.Instance.ResetSpawnCount();
         WaterTrapSpawner.Instance.WaterTrapsDespawn();
+        WaterTrapSpawner.Instance.ClearPos();
         SpawnManager.Instance.CanSpawn(true);
         CameraShotsScript.instance.ChangeCamera();
         PlayerWarningTextScript.instance.CleanUpWarningMessage();
@@ -261,16 +263,20 @@ public class GameManager : MonoBehaviour
         SoundManager.instance.PlaySFXFromSoundEffect(SoundManager.SFX_Clip.START_GAME_SFX);
         yield return new WaitForSeconds(1f); //clear UI
         PlayerWarningTextScript.instance.CleanUpWarningMessage();
+        yield return new WaitForSeconds(1f);
         int count;
         for (count = 0; count <= 3; count++) //Start funciton each call happens 1.2 seconds
         {
+            Debug.Log("Did We get stuck here game manager? Before switch");
             switch (count)
             {
                 case 0:
+                    Debug.Log("Did We get stuck here game manager? Before during case 0 start");
                     WaterTrapSpawner.Instance.WaterTrapsTransformUpdate();
                     CameraManager.instance.SetCameraForRace(); //This will update the spawn postion of water speed traps.
                     CountDownScirpt.instance.ChangeCountDownText("3");
                     MusicManager.instance.PlayMusicFromSoundEffect(MusicManager.Music_Clip.Count_Down_SFX);
+                    Debug.Log("Did We get stuck here game manager? Before during case 0 end");
                     break;
                 case 1:
                     SpawnManager.Instance.CanSpawn(false);

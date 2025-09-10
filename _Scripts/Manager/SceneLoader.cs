@@ -15,7 +15,7 @@ public class SceneLoader : MonoBehaviour
         FirstTimeLoad
     };
 
-    public LoadedScene CurrentScene { get; private set; }  
+    public LoadedScene CurrentScene { get; private set; }
 
     private void Awake()
     {
@@ -32,14 +32,14 @@ public class SceneLoader : MonoBehaviour
 
     private void Start()
     {
-       SceneManager.LoadSceneAsync("OpeningScene", LoadSceneMode.Additive);
+        SceneManager.LoadSceneAsync("OpeningScene", LoadSceneMode.Additive);
     }
 
     //? Main Logic ................................................................
     public void AdvanceToNextScene(LoadedScene pickscene)
     {
         string sceneToload = pickscene.ToString();
-        switch(sceneToload)
+        switch (sceneToload)
         {
             case "DuckRace":
                 SceneManager.LoadSceneAsync("UIScene", LoadSceneMode.Additive);
@@ -60,15 +60,29 @@ public class SceneLoader : MonoBehaviour
     public void UnloadLastScene(LoadedScene unloadscene)
     {
         string sceneToUnload = unloadscene.ToString();
-        Scene currentScene = SceneManager.GetSceneByName(sceneToUnload);
-        Debug.Log(sceneToUnload);
-        if (currentScene.isLoaded)
+        Scene scene = SceneManager.GetSceneByName(sceneToUnload);
+        if (!scene.isLoaded)
         {
-            Debug.Log("MyGameScene is currently loaded and active.");
-            SceneManager.UnloadSceneAsync(sceneToUnload);
+            Debug.Log("Scene not loaded: " + sceneToUnload);
+            return;
+        }
+
+
+        switch (sceneToUnload)
+        {
+            case "LoadingScene":
+                SceneManager.UnloadSceneAsync("LoadingScreen");
+                break;
+            case "OpeningScene":
+                SceneManager.UnloadSceneAsync("OpeningScene");
+                break;
+            case "FirstTimeLoad":
+                SceneManager.UnloadSceneAsync("FirstTimeLoad");
+                break;
+
         }
     }
-    
+
     private void CheckFirstLoad()
     {
         if (SaveDataManager.instance.firstLoad)
@@ -83,5 +97,10 @@ public class SceneLoader : MonoBehaviour
     {
         yield return new WaitForSeconds(2);
         SceneManager.LoadSceneAsync("DuckRace", LoadSceneMode.Additive);
+    }
+
+    public void UnloadLoadingScene()
+    {
+        SceneManager.UnloadSceneAsync("LoadingScreen");
     }
 }

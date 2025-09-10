@@ -18,7 +18,7 @@ public class WaterTrapSpawner : MonoBehaviour
 
     private void Awake()
     {
-         if (Instance == null)
+        if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
@@ -63,10 +63,11 @@ public class WaterTrapSpawner : MonoBehaviour
     //HelperFunctoin .....................................
     private Vector2 GetPos()
     {
-        int[] notTheseNumber = {49, 50, 51, 89, 90, 91, 124, 125, 126, 159, 160, 161, 199, 200, 201};
+        int safety = 1000;
+        int[] notTheseNumber = { 49, 50, 51, 89, 90, 91, 124, 125, 126, 159, 160, 161, 199, 200, 201 };
         int yPos = UnityEngine.Random.Range(-5, 2);
         Vector2 newPostion;
-        while (true)
+        while (safety-- > 0)
         {
             int findX = UnityEngine.Random.Range(6, 255);
             if (findX % 2 == 0)
@@ -91,5 +92,13 @@ public class WaterTrapSpawner : MonoBehaviour
                 return newPostion;
             }
         }
+        Vector2 failedPlacement = new(500, 500); 
+        Debug.LogError("Failed to find unique spawn position!");
+        return failedPlacement;
+    }
+
+    public void ClearPos()
+    {
+        storeSpawn.Clear();
     }
 }

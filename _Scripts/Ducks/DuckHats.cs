@@ -68,7 +68,7 @@ public class DuckHats : MonoBehaviour
                 hatRenderer.sprite = hats[1];
                 ChangeTransform(hatPos[1], 0, new Vector2(2, 2));
                 break;
-            case "cheif":
+            case "chief":
                 hatRenderer.sprite = hats[2];
                 ChangeTransform(hatPos[2], 0, new Vector2(1.2f, 1.2f));
                 break;

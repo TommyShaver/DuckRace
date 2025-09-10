@@ -6,6 +6,7 @@ public class DuckColor : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private bool iHaveALayer = false;
     private bool rainbowColorTrue;
+    private bool tauntPlaying;
     private int currentLayer = 50;
     private int defaultLayer;
     private float cycDuration = 3.25f;
@@ -13,7 +14,7 @@ public class DuckColor : MonoBehaviour
     private Tween rotationTween;
     private DuckManager duckManager;
     private Animator tauntAnimation;
-
+    
 
     public Color[] colors;
 
@@ -145,16 +146,25 @@ public class DuckColor : MonoBehaviour
         rotationTween.Pause();
         tauntAnimation.SetTrigger("TauntAnim");
         spriteRenderer.flipX = false;
+        tauntPlaying = true;
     }
 
     public void ReturnOutOfAnimation()
     {
-        Debug.Log("test");
+        if (tauntPlaying)
+        {
+            return;
+        }
         transform.DOLocalRotate(new Vector3(0, 0, 0), 0).SetEase(Ease.InOutElastic);
         SpriteRoation();
         spriteRenderer.flipX = true;
         duckManager.GetOutOfTauntAnim();
         tauntAnimation.SetTrigger("IdleAnim");
+    }
+
+    public void TauntAnimationFinsihedPlaying()
+    {
+        tauntPlaying = false;
     }
 
     public void RocketAnim()

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -51,7 +52,7 @@ public class SpawnManager : MonoBehaviour
         if (!canSpawn) //Check to make sure you can spawn
         {
             storeNames.Add(ducksName);
-            return; 
+            return;
         }
 
         for (int i = 0; i < usernameLog.Length; i++)
@@ -86,12 +87,7 @@ public class SpawnManager : MonoBehaviour
         if (storeNames == null)
             return;
 
-        foreach (string names in storeNames)
-        {
-            IncomingData(names);
-        }
-
-        storeNames.Clear();
+        StartCoroutine(SlowlySpawn());
     }
 
     //UI buttons --------------------------------------------------------------------------
@@ -114,5 +110,15 @@ public class SpawnManager : MonoBehaviour
                 spawnCount = i;
             }
         }
+    }
+
+    private IEnumerator SlowlySpawn()
+    {
+        foreach (string names in storeNames)
+        {
+            IncomingData(names);
+            yield return new WaitForSeconds(.5f);
+        }
+        storeNames.Clear();
     }
 }

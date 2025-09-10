@@ -11,7 +11,7 @@ public class TwitchManager : MonoBehaviour
     private TcpClient twitchClient;
     private StreamReader reader;
     private StreamWriter writer;
-
+    private float lastPingTime;
 
     private string username = "justinfan1234";
     private string passsword = "testtesttest";
@@ -40,7 +40,25 @@ public class TwitchManager : MonoBehaviour
 
     private void Update()
     {
-        ReadChatComputer();
+
+         if (twitchClient != null && twitchClient.Connected)
+        {
+            ReadChatComputer();
+
+            // Send periodic PING/PONG keepalive every ~4 minutes
+            if (Time.time - lastPingTime > 240f)
+            {
+                writer.WriteLine("PING :tmi.twitch.tv");
+                writer.Flush();
+                lastPingTime = Time.time;
+            }
+    }
+    else
+    {
+        // Try reconnect
+        TryToConnectTwitchComputer();
+    }
+        
     }
 
     // Which platform are we using ----------------------------------------------------

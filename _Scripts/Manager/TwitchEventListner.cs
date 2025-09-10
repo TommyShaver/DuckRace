@@ -10,6 +10,7 @@ public class TwitchEventListner : MonoBehaviour
 
     private string twitchUserName;
     private string trustedMod;
+    private int botNumber;
 
     public static event Action<string, string, string> OnColorChangeChat;
     public static event Action<string, string, string> OnHatChangeChat;
@@ -120,6 +121,10 @@ public class TwitchEventListner : MonoBehaviour
                 case "!stop":
                     GameManager.instance.StopAutoPlay();
                     break;
+                case "!addplayer":
+                    botNumber++;
+                    SpawnManager.Instance.IncomingData($"BillBot:{botNumber}");
+                    break;
             }
 
             if (message.StartsWith("!ban@", StringComparison.OrdinalIgnoreCase))
@@ -148,7 +153,7 @@ public class TwitchEventListner : MonoBehaviour
                 PlayerWarningTextScript.instance.SwitchPlayerWarningText($"{playerClear} has been removed");
                 OnClearPlayer?.Invoke(playerClear);
                 SoundManager.instance.PlaySFXFromSoundEffect(SoundManager.SFX_Clip.Clear_Duck_SFX);
-                //Debug.Log($"we made it here {playerClear}: they should be gone");
+                Debug.Log($"we made it here {playerClear}: they should be gone");
             }
         }
 

@@ -6,7 +6,6 @@ public class WaterSpeedTrap : MonoBehaviour
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Animator animationPath;
     [SerializeField] Color[] startingColors;
-    private Tween waveScaling;
     [SerializeField]private bool speedUp;
     private bool iHaveNumber;
     private int idName;
@@ -100,7 +99,6 @@ public class WaterSpeedTrap : MonoBehaviour
     private void OnDespawn()
     {
         speedUp = false;
-        waveScaling.Kill();
         transform.DOScaleY(0, .5f).SetEase(Ease.OutExpo);
     }
 

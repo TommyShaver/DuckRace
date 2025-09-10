@@ -40,16 +40,10 @@ public class ItemBlock : MonoBehaviour
     private void OpeningAnim()
     {
         transform.localScale = Vector3.zero;
-        transform.DOScale(new Vector3(2, 2, 0), .5f).SetEase(Ease.OutBounce).OnComplete(() =>
-        {
-            AnimationBounce();
-        });
+        transform.DOScale(new Vector3(2, 2, 0), .5f).SetEase(Ease.OutBounce);
     }
 
-    private void AnimationBounce()
-    {
-        bounceAnim = transform.DOLocalMoveY(transform.position.y + .1f, 1f).SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo);
-    }
+   
     private void SetLayer(int pos)
     {
         int baseSortingOrder = 49;
